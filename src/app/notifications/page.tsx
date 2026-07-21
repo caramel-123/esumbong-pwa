@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import AppBar from "@/components/AppBar";
 import BottomNav from "@/components/BottomNav";
 
@@ -13,7 +14,7 @@ const categoryStyle: Record<AlertCategory, { bg: string; icon: string }> = {
   system: { bg: "bg-on-surface-variant", icon: "location_on" },
 };
 
-const alerts: {
+const initialAlerts: {
   category: AlertCategory;
   time: string;
   text: string;
@@ -50,10 +51,31 @@ const alerts: {
   },
 ];
 
-const filters = ["All", "Reports", "Messages", "Civic"];
+type FilterKey = "All" | "Reports" | "Messages" | "Civic";
+
+const filters: FilterKey[] = ["All", "Reports", "Messages", "Civic"];
+
+const filterMatches = (filter: FilterKey, category: AlertCategory) => {
+  if (filter === "All") return true;
+  if (filter === "Reports") return category === "flag" || category === "system";
+  if (filter === "Messages") return category === "message";
+  return category === "verification";
+};
 
 export default function NotificationsPage() {
-  const [activeFilter, setActiveFilter] = useState(filters[0]);
+  const router = useRouter();
+  const [alerts, setAlerts] = useState(initialAlerts);
+  const [activeFilter, setActiveFilter] = useState<FilterKey>("All");
+
+  const visibleAlerts = useMemo(
+    () => alerts.filter((a) => filterMatches(activeFilter, a.category)),
+    [alerts, activeFilter]
+  );
+
+  const handleAlertClick = (index: number) => {
+    setAlerts((prev) => prev.map((a, i) => (i === index ? { ...a, unread: false } : a)));
+    router.push("/reports");
+  };
 
   return (
     <main className="flex flex-col min-h-dvh max-w-[375px] mx-auto bg-background text-on-background items-center">
@@ -83,10 +105,14 @@ export default function NotificationsPage() {
         <section className="relative">
           <div className="absolute left-6 top-3 bottom-3 w-px bg-outline-variant" />
           <div className="space-y-3">
-            {alerts.map((alert, i) => {
+            {visibleAlerts.map((alert, i) => {
               const { bg, icon } = categoryStyle[alert.category];
               return (
-                <div key={i} className="relative flex gap-4">
+                <button
+                  key={i}
+                  onClick={() => handleAlertClick(alerts.indexOf(alert))}
+                  className="relative flex gap-4 w-full text-left"
+                >
                   <div className="relative z-10 flex-shrink-0">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center ${bg}`}>
                       <span
@@ -127,9 +153,14 @@ export default function NotificationsPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </button>
               );
             })}
+            {visibleAlerts.length === 0 && (
+              <p className="text-center text-on-surface-variant font-body-md py-10">
+                No alerts in this category.
+              </p>
+            )}
           </div>
         </section>
 

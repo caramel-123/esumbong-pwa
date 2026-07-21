@@ -143,15 +143,20 @@ export default function FeaturesOverviewPage() {
               Resources
             </h4>
             <nav className="flex flex-col gap-2">
-              <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
+              <a
+                className="text-on-surface-variant hover:text-primary transition-colors"
+                href="https://github.com/caramel-123/esumbong-pwa/tree/main/src/app/api"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Developer APIs
               </a>
-              <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
+              <a className="text-on-surface-variant hover:text-primary transition-colors" href="mailto:privacy@esumbong.ph">
                 Data Privacy
               </a>
-              <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
+              <Link className="text-on-surface-variant hover:text-primary transition-colors" href="/features">
                 User Manual
-              </a>
+              </Link>
             </nav>
           </div>
           <div className="space-y-4">
@@ -159,13 +164,15 @@ export default function FeaturesOverviewPage() {
               Connect
             </h4>
             <nav className="flex flex-col gap-2">
-              <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
-                Twitter / X
+              <a
+                className="text-on-surface-variant hover:text-primary transition-colors"
+                href="https://github.com/caramel-123/esumbong-pwa"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
               </a>
-              <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
-                Facebook
-              </a>
-              <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
+              <a className="text-on-surface-variant hover:text-primary transition-colors" href="mailto:support@esumbong.ph">
                 Email Support
               </a>
             </nav>

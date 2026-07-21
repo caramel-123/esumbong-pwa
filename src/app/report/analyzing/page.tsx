@@ -34,6 +34,7 @@ function AiVerificationResultInner() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   // Falls back to the stock photo below if this screen is opened directly
   // (e.g. deep link, or capture was skipped) so it never renders blank.
@@ -131,6 +132,31 @@ function AiVerificationResultInner() {
     }
   };
 
+  const handleShareReport = async () => {
+    setMoreMenuOpen(false);
+    const shareData = { title: `Report ${caseRef}`, text: `eSumbong report ${caseRef}`, url: window.location.href };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // User cancelled the share sheet — no action needed.
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+    } catch {
+      // Clipboard API can be unavailable (e.g. insecure context) — non-fatal.
+    }
+  };
+
+  const handleDiscardReport = () => {
+    setMoreMenuOpen(false);
+    if (window.confirm("Discard this report? Your captured photo and analysis will be lost.")) {
+      router.push("/home");
+    }
+  };
+
   const gpsText = capture?.gps
     ? `${capture.gps.lat.toFixed(3)}, ${capture.gps.lng.toFixed(3)} (±${Math.round(capture.gps.accuracy)}m)`
     : "Not available";
@@ -186,9 +212,40 @@ function AiVerificationResultInner() {
           <span className="material-symbols-outlined text-on-surface">arrow_back</span>
         </button>
         <h1 className="font-medium text-body-md text-on-surface">Report {caseRef}</h1>
-        <button type="button" aria-label="More options" className="opacity-80 active:opacity-100 transition-opacity">
-          <span className="material-symbols-outlined text-on-surface">more_vert</span>
-        </button>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setMoreMenuOpen((v) => !v)}
+            aria-label="More options"
+            aria-expanded={moreMenuOpen}
+            className="opacity-80 active:opacity-100 transition-opacity"
+          >
+            <span className="material-symbols-outlined text-on-surface">more_vert</span>
+          </button>
+          {moreMenuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setMoreMenuOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-outline-variant rounded-2xl shadow-xl overflow-hidden z-50">
+                <button
+                  type="button"
+                  onClick={handleShareReport}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-body-md text-on-surface hover:bg-surface-container transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px] text-on-surface-variant">share</span>
+                  Share report
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDiscardReport}
+                  className="flex items-center gap-3 w-full px-4 py-3 text-body-md text-error hover:bg-error-container/30 transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px]">delete</span>
+                  Discard report
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </header>
 
       <div className="px-4 py-3 flex-grow space-y-3">

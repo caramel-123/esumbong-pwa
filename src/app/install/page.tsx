@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import AppMenu from "@/components/AppMenu";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -42,9 +43,7 @@ export default function InstallPwaPromptPage() {
 
       <header className="sticky top-0 w-full z-50 bg-surface border-b border-outline-variant flex justify-between items-center h-16 px-margin-mobile">
         <div className="flex items-center gap-3">
-          <button className="p-2 text-primary opacity-80">
-            <span className="material-symbols-outlined">menu</span>
-          </button>
+          <AppMenu />
           <h1 className="font-headline text-headline-md font-black text-primary tracking-tight">
             eSumbong
           </h1>

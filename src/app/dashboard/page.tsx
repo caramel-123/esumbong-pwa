@@ -1,6 +1,9 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import DesktopNav from "@/components/DesktopNav";
 import Eyebrow from "@/components/Eyebrow";
-import { projects } from "@/lib/mock-data";
+import { projects, type ProjectStatus } from "@/lib/mock-data";
 
 const statusBadge: Record<string, string> = {
   verified: "bg-blue-100 text-primary",
@@ -14,7 +17,64 @@ const progressColor: Record<string, string> = {
   flagged: "bg-error",
 };
 
+const statusCounts: Record<ProjectStatus, number> = {
+  verified: 42,
+  pending: 18,
+  flagged: 5,
+};
+
+const agencies = ["DPWH", "DOTr", "MMDA"] as const;
+
+function downloadCsv(rows: typeof projects) {
+  const header = ["Contract ID", "Project Name", "Agency", "Claimed %", "Actual %", "Status"];
+  const lines = rows.map((p) =>
+    [p.contractId, p.name, p.agency, `${p.claimedPct}%`, `${p.actualPct}%`, p.status]
+      .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+      .join(",")
+  );
+  const csv = [header.join(","), ...lines].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "esumbong-project-breakdown.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function PublicDashboardDesktopPage() {
+  const locations = useMemo(() => ["All Districts", ...Array.from(new Set(projects.map((p) => p.location)))], []);
+  const [district, setDistrict] = useState("All Districts");
+  const [enabledAgencies, setEnabledAgencies] = useState<Set<string>>(new Set(agencies));
+  const [activeStatuses, setActiveStatuses] = useState<Set<ProjectStatus>>(new Set());
+
+  const toggleAgency = (agency: string) => {
+    setEnabledAgencies((prev) => {
+      const next = new Set(prev);
+      if (next.has(agency)) next.delete(agency);
+      else next.add(agency);
+      return next;
+    });
+  };
+
+  const toggleStatus = (status: ProjectStatus) => {
+    setActiveStatuses((prev) => {
+      const next = new Set(prev);
+      if (next.has(status)) next.delete(status);
+      else next.add(status);
+      return next;
+    });
+  };
+
+  const filtered = useMemo(() => {
+    return projects.filter((p) => {
+      if (district !== "All Districts" && p.location !== district) return false;
+      if (!enabledAgencies.has(p.agency)) return false;
+      if (activeStatuses.size > 0 && !activeStatuses.has(p.status)) return false;
+      return true;
+    });
+  }, [district, enabledAgencies, activeStatuses]);
+
   return (
     <main className="overflow-x-hidden min-h-screen bg-surface">
       <DesktopNav active="dashboard" />
@@ -26,12 +86,16 @@ export default function PublicDashboardDesktopPage() {
               Filter by District
             </h3>
             <div className="relative">
-              <select className="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 text-body-md focus:ring-2 focus:ring-primary focus:border-primary appearance-none">
-                <option>All Districts</option>
-                <option>NCR - District I</option>
-                <option>NCR - District II</option>
-                <option>Region IV-A</option>
-                <option>Region VII</option>
+              <select
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                className="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 text-body-md focus:ring-2 focus:ring-primary focus:border-primary appearance-none"
+              >
+                {locations.map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc}
+                  </option>
+                ))}
               </select>
               <span className="material-symbols-outlined absolute right-3 top-3.5 pointer-events-none text-outline">
                 expand_more
@@ -43,10 +107,11 @@ export default function PublicDashboardDesktopPage() {
               Implementing Agency
             </h3>
             <div className="flex flex-col gap-3">
-              {["DPWH", "DOTr", "MMDA"].map((a) => (
+              {agencies.map((a) => (
                 <label key={a} className="flex items-center gap-3 cursor-pointer group">
                   <input
-                    defaultChecked={a !== "MMDA"}
+                    checked={enabledAgencies.has(a)}
+                    onChange={() => toggleAgency(a)}
                     className="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary"
                     type="checkbox"
                   />
@@ -62,18 +127,31 @@ export default function PublicDashboardDesktopPage() {
               Project Status
             </h3>
             <div className="flex flex-col gap-2">
-              <button className="flex items-center justify-between px-4 py-2 rounded-full border border-outline-variant bg-white hover:bg-surface-container transition-colors">
-                <span className="text-label-md">Verified</span>
-                <span className="bg-blue-100 text-primary text-xs font-bold px-2 py-0.5 rounded-full">42</span>
-              </button>
-              <button className="flex items-center justify-between px-4 py-2 rounded-full border border-outline-variant bg-white hover:bg-surface-container transition-colors">
-                <span className="text-label-md">Pending</span>
-                <span className="bg-amber-100 text-secondary text-xs font-bold px-2 py-0.5 rounded-full">18</span>
-              </button>
-              <button className="flex items-center justify-between px-4 py-2 rounded-full border border-outline-variant bg-white hover:bg-surface-container transition-colors">
-                <span className="text-label-md">Flagged</span>
-                <span className="bg-red-100 text-error text-xs font-bold px-2 py-0.5 rounded-full">05</span>
-              </button>
+              {(["verified", "pending", "flagged"] as ProjectStatus[]).map((status) => {
+                const active = activeStatuses.has(status);
+                const badgeClass =
+                  status === "verified"
+                    ? "bg-blue-100 text-primary"
+                    : status === "pending"
+                    ? "bg-amber-100 text-secondary"
+                    : "bg-red-100 text-error";
+                return (
+                  <button
+                    key={status}
+                    onClick={() => toggleStatus(status)}
+                    className={`flex items-center justify-between px-4 py-2 rounded-full border transition-colors ${
+                      active
+                        ? "border-primary bg-primary-fixed"
+                        : "border-outline-variant bg-white hover:bg-surface-container"
+                    }`}
+                  >
+                    <span className="text-label-md capitalize">{status}</span>
+                    <span className={`${badgeClass} text-xs font-bold px-2 py-0.5 rounded-full`}>
+                      {String(statusCounts[status]).padStart(2, "0")}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div className="mt-auto pt-6 border-t border-outline-variant">
@@ -138,7 +216,10 @@ export default function PublicDashboardDesktopPage() {
           <div className="bg-white border border-outline-variant rounded-2xl overflow-hidden">
             <div className="p-6 border-b border-outline-variant flex justify-between items-center">
               <h2 className="text-headline-md font-bold">Project Breakdown</h2>
-              <button className="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-full text-label-md hover:bg-surface-container transition-colors">
+              <button
+                onClick={() => downloadCsv(filtered)}
+                className="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-full text-label-md hover:bg-surface-container transition-colors"
+              >
                 <span className="material-symbols-outlined text-[18px]">download</span> Export CSV
               </button>
             </div>
@@ -167,7 +248,14 @@ export default function PublicDashboardDesktopPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant">
-                  {projects.map((p) => (
+                  {filtered.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-10 text-center text-on-surface-variant">
+                        No projects match the current filters.
+                      </td>
+                    </tr>
+                  )}
+                  {filtered.map((p) => (
                     <tr key={p.id} className="hover:bg-surface-container-low transition-colors">
                       <td className="px-6 py-5 font-label-md text-primary">{p.contractId}</td>
                       <td className="px-6 py-5 font-body-md font-bold">{p.name}</td>

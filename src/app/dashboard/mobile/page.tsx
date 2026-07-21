@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
+import AppMenu from "@/components/AppMenu";
 import BottomNav from "@/components/BottomNav";
 import { projects } from "@/lib/mock-data";
 
@@ -8,12 +12,41 @@ const statusStyle: Record<string, string> = {
   flagged: "bg-tertiary-fixed text-on-tertiary-fixed",
 };
 
+type ChipFilter = "all" | "dpwh" | "dotr" | "flagged";
+
+const chips: { key: ChipFilter; label: string }[] = [
+  { key: "all", label: "All Districts" },
+  { key: "dpwh", label: "DPWH" },
+  { key: "dotr", label: "DOTr" },
+  { key: "flagged", label: "Flagged" },
+];
+
 export default function PublicDashboardMobilePage() {
+  const [search, setSearch] = useState("");
+  const [activeChip, setActiveChip] = useState<ChipFilter>("all");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const filtered = useMemo(() => {
+    return projects.filter((p) => {
+      if (activeChip === "dpwh" && p.agency !== "DPWH") return false;
+      if (activeChip === "dotr" && p.agency !== "DOTr") return false;
+      if (activeChip === "flagged" && p.status !== "flagged") return false;
+
+      const query = search.trim().toLowerCase();
+      if (!query) return true;
+      return (
+        p.contractId.toLowerCase().includes(query) ||
+        p.name.toLowerCase().includes(query) ||
+        p.location.toLowerCase().includes(query)
+      );
+    });
+  }, [search, activeChip]);
+
   return (
     <main className="flex flex-col min-h-dvh max-w-[375px] mx-auto overflow-x-hidden bg-surface">
       <header className="sticky top-0 w-full z-50 bg-surface border-b border-outline-variant flex justify-between items-center h-16 px-margin-mobile">
         <div className="flex items-center gap-3">
-          <span className="material-symbols-outlined text-primary">menu</span>
+          <AppMenu />
           <div className="flex flex-col leading-tight">
             <span className="font-eyebrow text-[10px] uppercase text-on-surface-variant tracking-widest">
               Public Dashboard
@@ -23,9 +56,14 @@ export default function PublicDashboardMobilePage() {
             </span>
           </div>
         </div>
-        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-highest">
+        <button
+          type="button"
+          onClick={() => searchInputRef.current?.focus()}
+          aria-label="Search"
+          className="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-highest active:scale-95 transition-transform"
+        >
           <span className="material-symbols-outlined text-primary">search</span>
-        </div>
+        </button>
       </header>
 
       <main className="flex-1 pb-32">
@@ -44,6 +82,9 @@ export default function PublicDashboardMobilePage() {
               search
             </span>
             <input
+              ref={searchInputRef}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full h-14 pl-12 pr-4 bg-surface-container-lowest border border-outline-variant rounded-full font-body-md focus:outline-none focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all"
               placeholder="Search project ID or location..."
               type="text"
@@ -53,23 +94,37 @@ export default function PublicDashboardMobilePage() {
 
         <section className="mb-8">
           <div className="flex overflow-x-auto gap-2 px-margin-mobile">
-            <button className="flex-shrink-0 px-5 py-2.5 bg-primary text-on-primary rounded-full font-label-md transition-transform active:scale-95">
-              All Districts
-            </button>
-            <button className="flex-shrink-0 px-5 py-2.5 bg-surface-container-highest text-on-surface-variant rounded-full font-label-md hover:bg-outline-variant transition-colors">
-              DPWH
-            </button>
-            <button className="flex-shrink-0 px-5 py-2.5 bg-surface-container-highest text-on-surface-variant rounded-full font-label-md hover:bg-outline-variant transition-colors">
-              DOTr
-            </button>
-            <button className="flex-shrink-0 px-5 py-2.5 bg-error-container text-on-error-container rounded-full font-label-md hover:opacity-90 transition-opacity">
-              Flagged
-            </button>
+            {chips.map((chip) => {
+              const active = activeChip === chip.key;
+              const isFlagged = chip.key === "flagged";
+              return (
+                <button
+                  key={chip.key}
+                  onClick={() => setActiveChip(chip.key)}
+                  className={`flex-shrink-0 px-5 py-2.5 rounded-full font-label-md transition-transform active:scale-95 ${
+                    active
+                      ? isFlagged
+                        ? "bg-error-container text-on-error-container"
+                        : "bg-primary text-on-primary"
+                      : isFlagged
+                      ? "bg-error-container/40 text-on-error-container hover:opacity-90"
+                      : "bg-surface-container-highest text-on-surface-variant hover:bg-outline-variant"
+                  }`}
+                >
+                  {chip.label}
+                </button>
+              );
+            })}
           </div>
         </section>
 
         <section className="px-margin-mobile flex flex-col gap-6">
-          {projects.map((p) => (
+          {filtered.length === 0 && (
+            <p className="text-center text-on-surface-variant font-body-md py-10">
+              No projects match this filter.
+            </p>
+          )}
+          {filtered.map((p) => (
             <Link
               key={p.id}
               href={`/project/${p.id}`}

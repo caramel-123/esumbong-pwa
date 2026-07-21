@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ShareButton from "@/components/ShareButton";
 import { getProject } from "@/lib/mock-data";
 
 export default async function ProjectDetailsPage({
@@ -20,9 +21,7 @@ export default async function ProjectDetailsPage({
             {project.name}
           </h1>
         </div>
-        <button className="p-2 text-on-surface-variant hover:text-primary transition-colors">
-          <span className="material-symbols-outlined">share</span>
-        </button>
+        <ShareButton title={project.name} />
       </nav>
 
       <div className="flex-1 overflow-y-auto pb-32">
