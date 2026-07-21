@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import BottomNav from "@/components/BottomNav";
+
+const mapFilters = ["All Issues", "Roads", "Waste", "Water"];
 
 const pins = [
   {
@@ -34,6 +37,8 @@ const pins = [
 ];
 
 export default function HomeMapPage() {
+  const [activeFilter, setActiveFilter] = useState(mapFilters[0]);
+
   return (
     <main className="relative w-full h-dvh max-w-[375px] mx-auto overflow-hidden bg-[#dbe4f5]">
       {/* Full-bleed map, fills entire screen */}
@@ -81,18 +86,21 @@ export default function HomeMapPage() {
         </div>
 
         <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          <button className="whitespace-nowrap px-4 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-md active:scale-95 transition-transform">
-            All Issues
-          </button>
-          <button className="whitespace-nowrap px-4 py-2 bg-white/80 backdrop-blur-xl text-on-surface-variant border border-white/60 rounded-full font-label-md text-label-md shadow-sm active:scale-95 transition-transform">
-            Roads
-          </button>
-          <button className="whitespace-nowrap px-4 py-2 bg-white/80 backdrop-blur-xl text-on-surface-variant border border-white/60 rounded-full font-label-md text-label-md shadow-sm active:scale-95 transition-transform">
-            Waste
-          </button>
-          <button className="whitespace-nowrap px-4 py-2 bg-white/80 backdrop-blur-xl text-on-surface-variant border border-white/60 rounded-full font-label-md text-label-md shadow-sm active:scale-95 transition-transform">
-            Water
-          </button>
+          {mapFilters.map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              onClick={() => setActiveFilter(filter)}
+              aria-pressed={activeFilter === filter}
+              className={`whitespace-nowrap px-4 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 ${
+                activeFilter === filter
+                  ? "bg-primary text-on-primary shadow-md"
+                  : "bg-white/80 backdrop-blur-xl text-on-surface-variant border border-white/60 shadow-sm"
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
         </div>
       </div>
 

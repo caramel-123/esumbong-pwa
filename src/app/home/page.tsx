@@ -41,7 +41,7 @@ const statusMeta: Record<
 
 export default function HomeDashboardPage() {
   return (
-    <main className="flex flex-col min-h-screen max-w-[375px] mx-auto bg-background">
+    <main className="flex flex-col min-h-dvh max-w-[375px] mx-auto bg-background">
       <AppBar />
 
       <div className="flex-1 px-margin-mobile pt-5 pb-24 space-y-6">

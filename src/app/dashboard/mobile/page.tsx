@@ -10,7 +10,7 @@ const statusStyle: Record<string, string> = {
 
 export default function PublicDashboardMobilePage() {
   return (
-    <main className="flex flex-col min-h-screen max-w-[375px] mx-auto overflow-x-hidden bg-surface">
+    <main className="flex flex-col min-h-dvh max-w-[375px] mx-auto overflow-x-hidden bg-surface">
       <header className="sticky top-0 w-full z-50 bg-surface border-b border-outline-variant flex justify-between items-center h-16 px-margin-mobile">
         <div className="flex items-center gap-3">
           <span className="material-symbols-outlined text-primary">menu</span>

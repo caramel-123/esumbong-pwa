@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import AppBar from "@/components/AppBar";
 import BottomNav from "@/components/BottomNav";
 
@@ -50,19 +53,24 @@ const alerts: {
 const filters = ["All", "Reports", "Messages", "Civic"];
 
 export default function NotificationsPage() {
+  const [activeFilter, setActiveFilter] = useState(filters[0]);
+
   return (
-    <main className="flex flex-col min-h-screen max-w-[375px] mx-auto bg-background text-on-background items-center">
+    <main className="flex flex-col min-h-dvh max-w-[375px] mx-auto bg-background text-on-background items-center">
       <AppBar />
 
       <main className="w-full max-w-[375px] px-margin-mobile pt-5 pb-24">
         <h2 className="font-headline text-headline-md text-on-background mb-4">Alerts</h2>
 
         <div className="grid grid-cols-4 gap-2 mb-6">
-          {filters.map((filter, i) => (
+          {filters.map((filter) => (
             <button
               key={filter}
-              className={`text-center font-label-md text-label-sm px-2 py-2 rounded-full whitespace-nowrap ${
-                i === 0
+              type="button"
+              onClick={() => setActiveFilter(filter)}
+              aria-pressed={activeFilter === filter}
+              className={`text-center font-label-md text-label-sm px-2 py-2 rounded-full whitespace-nowrap transition-colors ${
+                activeFilter === filter
                   ? "bg-primary text-white"
                   : "bg-white text-on-surface-variant border border-outline-variant"
               }`}

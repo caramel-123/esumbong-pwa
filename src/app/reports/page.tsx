@@ -24,7 +24,7 @@ const borderStyle: Record<string, string> = {
 
 export default function MyReportsPage() {
   return (
-    <main className="flex flex-col min-h-screen max-w-[375px] mx-auto overflow-x-hidden shadow-2xl bg-surface">
+    <main className="flex flex-col min-h-dvh max-w-[375px] mx-auto overflow-x-hidden shadow-2xl bg-surface">
       <AppBar />
 
       <main className="grow px-margin-mobile py-6 pb-24">
