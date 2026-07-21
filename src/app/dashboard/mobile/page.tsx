@@ -18,7 +18,7 @@ export default function PublicDashboardMobilePage() {
             <span className="font-eyebrow text-[10px] uppercase text-on-surface-variant tracking-widest">
               Public Dashboard
             </span>
-            <span className="font-headline-md text-headline-md font-black text-primary tracking-tight">
+            <span className="font-headline text-headline-md font-black text-primary tracking-tight">
               eSumbong
             </span>
           </div>
@@ -30,7 +30,7 @@ export default function PublicDashboardMobilePage() {
 
       <main className="flex-1 pb-32">
         <section className="px-margin-mobile pt-6 pb-4">
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-background">
+          <h1 className="font-headline text-headline-lg-mobile text-on-background">
             Project Accountability
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant mt-1">
@@ -84,7 +84,7 @@ export default function PublicDashboardMobilePage() {
                   <span className="text-[10px] font-bold">Compass</span>
                 </div>
               </div>
-              <h3 className="font-headline-md text-headline-md text-on-background mb-1">{p.name}</h3>
+              <h3 className="font-headline text-headline-md text-on-background mb-1">{p.name}</h3>
               <p className="font-body-md text-body-md text-on-surface-variant mb-6">
                 Contract ID: {p.contractId}
               </p>

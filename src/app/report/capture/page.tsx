@@ -67,7 +67,7 @@ function CameraCaptureInner() {
         }}
       />
 
-      <header className="relative z-20 pt-12 px-5 flex flex-col gap-4 items-center">
+      <header className="relative z-20 pt-12 px-5 flex flex-col gap-3 items-center">
         <div className="w-full flex justify-start">
           <Link
             href="/home"
@@ -76,32 +76,35 @@ function CameraCaptureInner() {
             <span className="material-symbols-outlined">close</span>
           </Link>
         </div>
-        <p className="font-headline-md text-headline-md text-white text-center drop-shadow-md">
-          Point camera at the infrastructure project site
-        </p>
-        <div className="flex flex-col items-center gap-2">
-          <div className="bg-black/40 backdrop-blur-xl border border-white/20 rounded-full px-4 py-1.5 flex items-center gap-2 text-white shadow-sm">
+
+        {/* Premium verification seal */}
+        <div className="flex flex-col items-center gap-2 px-5 py-3 rounded-2xl bg-black/50 backdrop-blur-xl border border-[#FFB613]/50 shadow-[0_0_28px_rgba(255,182,19,0.18)]">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="material-symbols-outlined text-[#FFB613] text-[20px]"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              shield
+            </span>
+            <span className="text-[#FFB613] font-black text-[12px] uppercase tracking-[0.14em]">
+              Compass Verified
+            </span>
+          </div>
+          <div className="flex items-center gap-3 text-white/90">
             <div className="flex items-center gap-1.5 border-r border-white/20 pr-3">
-              <span className="material-symbols-outlined text-[18px] text-primary-fixed">location_on</span>
+              <span className="material-symbols-outlined text-[16px] text-white/70">location_on</span>
               <span className="font-label-sm text-label-sm tracking-tight">14.5995° N, 120.9842° E</span>
             </div>
-            <div className="flex items-center gap-1.5 pl-1">
-              <span className="material-symbols-outlined text-[18px] text-primary-fixed">schedule</span>
+            <div className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[16px] text-white/70">schedule</span>
               <span className="font-label-sm text-label-sm tracking-tight">{timestamp}</span>
             </div>
           </div>
-          <div className="flex gap-2">
-            <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 rounded px-2 py-0.5">
-              <span className="material-symbols-outlined text-[12px] text-primary-fixed">explore</span>
-              <span className="text-[10px] font-bold text-white uppercase tracking-widest">
-                Compass Verified
-              </span>
-            </div>
-            <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 rounded px-2 py-0.5">
-              <span className="material-symbols-outlined text-[12px] text-primary-fixed">auto_awesome</span>
-              <span className="text-[10px] font-bold text-white uppercase tracking-widest">eGovAI Triage</span>
-            </div>
-          </div>
+        </div>
+
+        <div className="flex items-center gap-1 bg-white/10 backdrop-blur-md border border-white/10 rounded-full px-3 py-1">
+          <span className="material-symbols-outlined text-[12px] text-primary-fixed">auto_awesome</span>
+          <span className="text-[10px] font-bold text-white uppercase tracking-widest">eGovAI Triage</span>
         </div>
       </header>
 
@@ -115,6 +118,11 @@ function CameraCaptureInner() {
       </div>
 
       <footer className="absolute bottom-0 left-0 w-full z-20 pb-12 flex flex-col items-center">
+        <div className="mb-6 px-6 py-2.5 bg-black/50 backdrop-blur-md rounded-full max-w-[280px] mx-auto">
+          <p className="text-white text-center font-body-md text-[14px] leading-snug">
+            Point camera at the issue you want to report.
+          </p>
+        </div>
         <div className="mb-8 flex flex-col items-center gap-1">
           <div className="w-48 h-1 bg-white/20 rounded-full relative overflow-hidden">
             <div className="absolute left-1/2 -translate-x-1/2 top-0 h-full w-1 bg-primary-fixed z-10"></div>

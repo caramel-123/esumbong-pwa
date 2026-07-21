@@ -91,7 +91,7 @@ export default function PublicDashboardDesktopPage() {
         <main className="flex-1 overflow-y-auto bg-surface-container-low p-margin-desktop space-y-8">
           <div className="flex justify-between items-end">
             <div>
-              <h1 className="font-headline-lg text-headline-lg text-on-background">
+              <h1 className="font-headline text-headline-lg text-on-background">
                 Public Accountability Dashboard
               </h1>
               <p className="text-body-lg text-on-surface-variant">

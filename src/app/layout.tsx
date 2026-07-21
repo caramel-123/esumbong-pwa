@@ -42,6 +42,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${baloo2.variable} ${nunitoSans.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <head>
         <link

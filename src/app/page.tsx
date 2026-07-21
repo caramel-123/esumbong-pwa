@@ -26,7 +26,7 @@ export default function SplashLoginPage() {
           </div>
         </div>
         <div className="text-center space-y-1">
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">
+          <h1 className="font-headline text-headline-lg-mobile text-primary tracking-tight">
             eSumbong
           </h1>
           <p className="font-label-md text-label-md text-on-surface-variant/80 tracking-wider">

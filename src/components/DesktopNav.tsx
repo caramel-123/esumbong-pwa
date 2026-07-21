@@ -18,7 +18,7 @@ export default function DesktopNav({
     <nav className="sticky top-0 w-full z-50 bg-surface border-b border-outline-variant">
       <div className="flex justify-between items-center h-16 px-margin-mobile md:px-margin-desktop max-w-[1200px] mx-auto">
         <Link href="/landing" className="flex items-center gap-2">
-          <span className="font-headline-md text-headline-md font-black text-primary tracking-tight">
+          <span className="font-headline text-headline-md font-black text-primary tracking-tight">
             eSumbong
           </span>
         </Link>

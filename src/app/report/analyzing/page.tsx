@@ -92,7 +92,7 @@ function AiVerificationResultInner() {
               </span>
             </div>
           </div>
-          <p className="font-headline-md text-headline-md text-center text-on-surface animate-bounce">
+          <p className="font-headline text-headline-md text-center text-on-surface animate-bounce">
             Analyzing photo with eGovAI...
           </p>
           <p className="font-body-md text-body-md text-on-surface-variant mt-2 text-center">
@@ -105,7 +105,7 @@ function AiVerificationResultInner() {
         <Link href="/project/1" className="opacity-80 active:opacity-100 transition-opacity">
           <span className="material-symbols-outlined text-primary">arrow_back</span>
         </Link>
-        <h1 className="font-headline-md text-headline-md font-black text-primary tracking-tight">
+        <h1 className="font-headline text-headline-md font-black text-primary tracking-tight">
           eSumbong
         </h1>
         <button className="opacity-80 active:opacity-100 transition-opacity">
@@ -130,7 +130,7 @@ function AiVerificationResultInner() {
           </div>
           <div>
             <h2
-              className={`font-headline-md text-headline-md uppercase leading-none ${
+              className={`font-headline text-headline-md uppercase leading-none ${
                 result?.discrepancyFlag === false ? "text-on-primary-fixed" : "text-on-error-container"
               }`}
             >
@@ -177,7 +177,7 @@ function AiVerificationResultInner() {
           <div className="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col justify-between">
             <div>
               <p className="font-eyebrow text-eyebrow text-on-surface-variant mb-1">CLAIM STATUS</p>
-              <h3 className="font-headline-md text-headline-md text-on-surface">{claimed}%</h3>
+              <h3 className="font-headline text-headline-md text-on-surface">{claimed}%</h3>
               <p className="font-label-md text-label-md text-on-surface-variant">(Complete)</p>
             </div>
             <div className="mt-4 flex items-center gap-2">
@@ -193,7 +193,7 @@ function AiVerificationResultInner() {
             </div>
             <div>
               <p className="font-eyebrow text-eyebrow text-primary-container mb-1">AI DETECTION</p>
-              <h3 className="font-headline-md text-headline-md text-primary-container">{detected}%</h3>
+              <h3 className="font-headline text-headline-md text-primary-container">{detected}%</h3>
               <p className="font-label-md text-label-md text-on-surface-variant">
                 ({(result?.classification ?? "foundations_only").replace(/_/g, " ")})
               </p>
@@ -223,7 +223,7 @@ function AiVerificationResultInner() {
         <div className="space-y-4">
           <Link
             href="/report/confirmed"
-            className="w-full bg-primary-container text-white py-4 rounded-full font-headline-md text-headline-md shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3"
+            className="w-full bg-primary-container text-white py-4 rounded-full font-headline text-headline-md shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3"
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
               assignment_late

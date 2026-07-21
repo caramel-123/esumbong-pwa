@@ -45,7 +45,7 @@ export default function InstallPwaPromptPage() {
           <button className="p-2 text-primary opacity-80">
             <span className="material-symbols-outlined">menu</span>
           </button>
-          <h1 className="font-headline-md text-headline-md font-black text-primary tracking-tight">
+          <h1 className="font-headline text-headline-md font-black text-primary tracking-tight">
             eSumbong
           </h1>
         </div>
@@ -80,7 +80,7 @@ export default function InstallPwaPromptPage() {
                 </span>
               </div>
               <div className="space-y-1">
-                <h2 className="font-headline-md text-headline-md text-primary">
+                <h2 className="font-headline text-headline-md text-primary">
                   {installed ? "eSumbong is installed" : "Add eSumbong to Home Screen"}
                 </h2>
                 <p className="text-on-surface-variant font-body-md px-4">
@@ -123,7 +123,7 @@ export default function InstallPwaPromptPage() {
                 <>
                   <button
                     onClick={handleInstall}
-                    className="bg-primary-container text-white py-4 rounded-full font-headline-md text-lg shadow-xl hover:bg-primary transition-all active:scale-95"
+                    className="bg-primary-container text-white py-4 rounded-full font-headline text-lg shadow-xl hover:bg-primary transition-all active:scale-95"
                   >
                     Install Now
                   </button>
@@ -137,7 +137,7 @@ export default function InstallPwaPromptPage() {
               ) : (
                 <Link
                   href="/home"
-                  className="bg-primary-container text-white py-4 rounded-full font-headline-md text-lg shadow-xl hover:bg-primary transition-all active:scale-95 text-center"
+                  className="bg-primary-container text-white py-4 rounded-full font-headline text-lg shadow-xl hover:bg-primary transition-all active:scale-95 text-center"
                 >
                   Continue to eSumbong
                 </Link>

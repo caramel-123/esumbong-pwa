@@ -12,7 +12,7 @@ export default function LandingHeroPage() {
             <span className="uppercase font-eyebrow text-eyebrow text-primary tracking-[0.2em] mb-4 bg-primary/5 px-4 py-1.5 rounded-full">
               TRANSPARENCY IN MOTION
             </span>
-            <h1 className="font-headline-lg text-[48px] md:text-[64px] leading-[1.1] mb-6 text-on-background">
+            <h1 className="font-headline text-[48px] md:text-[64px] leading-[1.1] mb-6 text-on-background">
               Verifying Infrastructure for a{" "}
               <span className="text-primary-container">Better Philippines</span>
             </h1>
@@ -23,19 +23,19 @@ export default function LandingHeroPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full mb-12">
               <div className="flex flex-col gap-1 border-l-2 border-primary-container pl-4">
-                <span className="font-headline-md text-headline-md text-on-surface">1.2k</span>
+                <span className="font-headline text-headline-md text-on-surface">1.2k</span>
                 <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
                   Reports Verified
                 </span>
               </div>
               <div className="flex flex-col gap-1 border-l-2 border-primary-container pl-4">
-                <span className="font-headline-md text-headline-md text-on-surface">450</span>
+                <span className="font-headline text-headline-md text-on-surface">450</span>
                 <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
                   Discrepancies Found
                 </span>
               </div>
               <div className="flex flex-col gap-1 border-l-2 border-primary-container pl-4">
-                <span className="font-headline-md text-headline-md text-on-surface">₱2.4B</span>
+                <span className="font-headline text-headline-md text-on-surface">₱2.4B</span>
                 <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">
                   Budget Tracked
                 </span>

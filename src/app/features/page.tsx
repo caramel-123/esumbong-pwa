@@ -63,7 +63,7 @@ export default function FeaturesOverviewPage() {
           <span className="font-eyebrow text-eyebrow text-primary tracking-[0.2em] uppercase">
             HOW IT WORKS
           </span>
-          <h1 className="font-headline-lg text-headline-lg text-on-background max-w-2xl mx-auto">
+          <h1 className="font-headline text-headline-lg text-on-background max-w-2xl mx-auto">
             Citizen Empowerment via eGov APIs
           </h1>
           <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl mx-auto">
@@ -93,7 +93,7 @@ export default function FeaturesOverviewPage() {
                 </span>
               </div>
               <div className="space-y-2">
-                <h3 className="font-headline-md text-headline-md text-on-background">{f.title}</h3>
+                <h3 className="font-headline text-headline-md text-on-background">{f.title}</h3>
                 <p className="font-body-md text-body-md text-on-surface-variant">{f.body}</p>
               </div>
               {f.highlighted && (
@@ -106,7 +106,7 @@ export default function FeaturesOverviewPage() {
         </div>
 
         <div className="mt-20 flex flex-col items-center gap-6 p-12 bg-primary-fixed rounded-lg border border-primary-container/20">
-          <h2 className="font-headline-md text-headline-md text-on-primary-fixed text-center">
+          <h2 className="font-headline text-headline-md text-on-primary-fixed text-center">
             Ready to contribute to your community?
           </h2>
           <div className="flex gap-4">
@@ -130,7 +130,7 @@ export default function FeaturesOverviewPage() {
       <footer className="bg-surface-container-high py-12 mt-20">
         <div className="max-w-[1200px] mx-auto px-margin-desktop grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-2 space-y-4">
-            <span className="font-headline-md text-headline-md font-black text-primary tracking-tight">
+            <span className="font-headline text-headline-md font-black text-primary tracking-tight">
               eSumbong
             </span>
             <p className="font-body-md text-body-md text-on-surface-variant max-w-sm">

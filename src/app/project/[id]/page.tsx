@@ -16,7 +16,7 @@ export default async function ProjectDetailsPage({
           <Link href="/home" className="p-2 -ml-2 transition-transform active:scale-90 text-primary">
             <span className="material-symbols-outlined">arrow_back</span>
           </Link>
-          <h1 className="font-headline-md text-headline-md font-black text-primary tracking-tight truncate max-w-[200px]">
+          <h1 className="font-headline text-headline-md font-black text-primary tracking-tight truncate max-w-[200px]">
             {project.name}
           </h1>
         </div>
@@ -44,7 +44,7 @@ export default async function ProjectDetailsPage({
               PENDING / UNDER REVIEW
             </span>
           </div>
-          <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-primary leading-tight mb-2">
+          <h2 className="font-headline text-headline-lg-mobile text-primary leading-tight mb-2">
             {project.name}
           </h2>
           <div className="flex items-center gap-2 text-on-surface-variant">
@@ -72,14 +72,14 @@ export default async function ProjectDetailsPage({
                 <span className="font-label-sm text-label-sm text-on-surface-variant mb-1">
                   Project Budget
                 </span>
-                <span className="font-headline-md text-headline-md text-on-surface">{project.budget}</span>
+                <span className="font-headline text-headline-md text-on-surface">{project.budget}</span>
               </div>
               <div className="flex flex-col">
                 <span className="font-label-sm text-label-sm text-on-surface-variant mb-1">
                   Claimed Completion
                 </span>
                 <div className="flex items-baseline gap-1">
-                  <span className="font-headline-md text-headline-md text-on-surface">
+                  <span className="font-headline text-headline-md text-on-surface">
                     {project.claimedPct}%
                   </span>
                   <span className="material-symbols-outlined text-[16px] text-secondary">trending_up</span>
@@ -126,7 +126,7 @@ export default async function ProjectDetailsPage({
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[375px] bg-surface p-margin-mobile border-t border-outline-variant/30 flex flex-col gap-4 shadow-[0_-8px_20px_rgba(0,0,0,0.05)]">
         <Link
           href={`/report/capture?project=${project.id}`}
-          className="w-full bg-primary-container text-white py-4 rounded-full font-headline-md text-headline-md shadow-lg flex items-center justify-center gap-3 transition-transform active:scale-95 group"
+          className="w-full bg-primary-container text-white py-4 rounded-full font-headline text-headline-md shadow-lg flex items-center justify-center gap-3 transition-transform active:scale-95 group"
         >
           <span
             className="material-symbols-outlined text-[28px] group-hover:rotate-12 transition-transform"

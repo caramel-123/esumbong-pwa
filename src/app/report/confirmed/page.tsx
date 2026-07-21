@@ -39,7 +39,7 @@ export default function SubmissionConfirmedPage() {
           </span>
         </div>
         <div className="space-y-3">
-          <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tight">
+          <h1 className="font-headline text-headline-lg-mobile text-primary tracking-tight">
             Report Submitted Successfully
           </h1>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-[280px] mx-auto">
