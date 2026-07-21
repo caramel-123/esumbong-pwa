@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import BottomNav from "@/components/BottomNav";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 import { getPendingCapture, type CaptureBundle } from "@/lib/capture";
 
 interface AnalysisResult {
@@ -17,6 +17,14 @@ interface AnalysisResult {
 const FALLBACK_PHOTO_URL =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuD2A9vEK5i0CdoAg3BwRfu_PXZCefwcaU5SHKBq5G5QMcF_W_vVshdK7hpwxpGrb_4yMLhGEbjG4WT-nw-ZTI7mtlzvMx2nj-4JmBNtOGlSSb60Meo0BkNoinQhVR3H0grkyHjBQCzkmeQrcpFjoKovfpQ3s7vei9LtlLlcveXiDgmzS8OgmloB3bV09I1dVGKR47X8x0E5kEae2fPXUtOEd0FVvIRmALN8E9JZDYEkdI7XBWrdUiArXP0usiDiHrUGMz2YXcEwA-k";
 
+const HEATMAP_PHOTO_URL =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuBHIeVYrZSGE7t11kq-hnqV6XirywzoGUJaMqfHkswc_Xm3Idk4SeqJOsbp4ak39ne7u-RAxS6SyzCvRbJvWWzhh5_71NAUfUfvYh2D_bo4u0u3hdcuIR1KfC0BjOGYQn9hUiROleeyxm5LXkvw0UOfRLesWA6QLlkApSjen2ILGJknyf85TFcgQkSGpW4-8p7hz5fxUXf1sBUI9BE0mh4FhfhX3iADiq23W4EQYjbdKOtrjzCvNrEgUGmFr4bL5NMFFNGJUHN1b5k";
+
+function truncateMiddle(value: string, head = 5, tail = 4): string {
+  if (value.length <= head + tail + 1) return value;
+  return `${value.slice(0, head)}…${value.slice(-tail)}`;
+}
+
 function AiVerificationResultInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,12 +33,17 @@ function AiVerificationResultInner() {
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   // Falls back to the stock photo below if this screen is opened directly
   // (e.g. deep link, or capture was skipped) so it never renders blank.
   const [capture] = useState<CaptureBundle | null>(() =>
     typeof window !== "undefined" ? getPendingCapture() : null
   );
+  // Provisional, display-only case reference — the real anchor reference
+  // only exists once this report is actually submitted (see confirmed
+  // screen), so this is not read from or written to the backend.
+  const [caseRef] = useState(() => `#ES-${Math.floor(1000 + Math.random() * 8999)}`);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -71,6 +84,8 @@ function AiVerificationResultInner() {
   const offset = circumference - (progress / 100) * circumference;
   const claimed = result?.claimedPct ?? 85;
   const detected = result?.detectedPct ?? 40;
+  const gap = Math.max(0, claimed - detected);
+  const verified = result?.discrepancyFlag === false;
 
   const handleSubmit = async () => {
     setSubmitting(true);
@@ -105,10 +120,25 @@ function AiVerificationResultInner() {
     router.push(submissionId ? `/report/confirmed?submissionId=${submissionId}` : "/report/confirmed");
   };
 
+  const handleCopyHash = async () => {
+    if (!capture?.hash) return;
+    try {
+      await navigator.clipboard.writeText(capture.hash);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard API can be unavailable (e.g. insecure context) — non-fatal.
+    }
+  };
+
+  const gpsText = capture?.gps
+    ? `${capture.gps.lat.toFixed(3)}, ${capture.gps.lng.toFixed(3)} (±${Math.round(capture.gps.accuracy)}m)`
+    : "Not available";
+
   return (
-    <main className="w-full max-w-[375px] min-h-screen mx-auto bg-background flex flex-col relative pb-32">
+    <main className="w-full max-w-[375px] min-h-screen mx-auto bg-background flex flex-col relative">
       {loading && (
-        <div className="fixed inset-0 z-[100] bg-surface flex flex-col items-center justify-center p-gutter">
+        <div className="fixed inset-0 z-100 bg-surface flex flex-col items-center justify-center p-gutter">
           <div className="relative w-32 h-32 mb-8">
             <svg className="w-full h-full" style={{ transform: "rotate(-90deg)" }}>
               <circle
@@ -138,178 +168,159 @@ function AiVerificationResultInner() {
               </span>
             </div>
           </div>
-          <p className="font-headline text-headline-md text-center text-on-surface animate-bounce">
-            Analyzing photo with eGovAI...
-          </p>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-2 text-center">
+          <p className="font-bold text-headline-md text-center text-on-surface">Analyzing photo with eGovAI…</p>
+          <p className="text-body-md text-on-surface-variant mt-2 text-center">
             Verifying visual claim against official geo-records.
           </p>
         </div>
       )}
 
-      <header className="sticky top-0 w-full z-50 bg-surface border-b border-outline-variant flex justify-between items-center h-16 px-margin-mobile">
-        <Link href="/project/1" className="opacity-80 active:opacity-100 transition-opacity">
-          <span className="material-symbols-outlined text-primary">arrow_back</span>
-        </Link>
-        <h1 className="font-headline text-headline-md font-black text-primary tracking-tight">
-          eSumbong
-        </h1>
-        <button className="opacity-80 active:opacity-100 transition-opacity">
-          <span className="material-symbols-outlined text-primary">more_vert</span>
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full h-14 bg-surface border-b border-outline-variant flex items-center justify-between px-4">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          aria-label="Go back"
+          className="opacity-80 active:opacity-100 transition-opacity"
+        >
+          <span className="material-symbols-outlined text-on-surface">arrow_back</span>
+        </button>
+        <h1 className="font-medium text-body-md text-on-surface">Report {caseRef}</h1>
+        <button type="button" aria-label="More options" className="opacity-80 active:opacity-100 transition-opacity">
+          <span className="material-symbols-outlined text-on-surface">more_vert</span>
         </button>
       </header>
 
-      <div className="px-margin-mobile pt-8 flex-grow">
-        <div
-          className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-            result?.discrepancyFlag === false ? "bg-primary-fixed" : "bg-error-container"
-          }`}
-        >
-          <div
-            className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${
-              result?.discrepancyFlag === false ? "bg-primary" : "bg-error"
-            }`}
-          >
-            <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>
-              {result?.discrepancyFlag === false ? "check_circle" : "warning"}
+      <div className="px-4 py-3 flex-grow space-y-3">
+        {/* Section 1 — Photo comparison (evidence) */}
+        <div>
+          <BeforeAfterSlider
+            beforeSrc={capture?.photoDataUrl || FALLBACK_PHOTO_URL}
+            beforeAlt="Your submitted site photo"
+            afterSrc={HEATMAP_PHOTO_URL}
+            afterAlt="eGovAI heatmap overlay"
+          />
+          <div className="flex items-center justify-between mt-2 px-1">
+            <span className="text-label-sm text-on-surface-variant">Your photo</span>
+            <span className="material-symbols-outlined text-on-surface-variant text-[16px]" aria-hidden="true">
+              compare_arrows
             </span>
+            <span className="text-label-sm text-primary font-medium">AI heatmap</span>
           </div>
+        </div>
+
+        {/* Section 2 — Completion comparison (comparison) */}
+        <div className="bg-white border border-outline-variant rounded-2xl p-5">
+          <p className="text-label-sm text-on-surface-variant mb-4">Completion comparison</p>
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <p className="font-black text-[40px] leading-none text-secondary-container">{claimed}%</p>
+              <p className="text-label-sm text-on-surface-variant mt-1">Official claim</p>
+            </div>
+            <div className="text-right">
+              <p className="font-black text-[40px] leading-none text-primary">{detected}%</p>
+              <p className="text-label-sm text-on-surface-variant mt-1">AI detected</p>
+            </div>
+          </div>
+          <div className="relative h-2 rounded-full bg-surface-container">
+            <div className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: `${detected}%` }} />
+            <div
+              className="absolute inset-y-0 bg-error-container"
+              style={{ left: `${detected}%`, width: `${gap}%` }}
+            />
+            <div
+              className="absolute top-1/2 w-1 h-3.5 rounded-full bg-secondary-container"
+              style={{ left: `${claimed}%`, transform: "translate(-50%, -50%)" }}
+            />
+          </div>
+          <p className="text-label-sm text-error font-semibold mt-2">{gap}-point discrepancy</p>
+        </div>
+
+        {/* Section 3 — Verdict */}
+        <div className={`p-4 rounded-2xl flex items-start gap-3 ${verified ? "bg-primary-fixed" : "bg-error-container"}`}>
+          <span
+            className={`material-symbols-outlined shrink-0 ${verified ? "text-primary" : "text-error"}`}
+            style={{ fontVariationSettings: "'FILL' 1" }}
+            aria-hidden="true"
+          >
+            {verified ? "check_circle" : "warning"}
+          </span>
           <div>
-            <h2
-              className={`font-headline text-headline-md uppercase leading-none ${
-                result?.discrepancyFlag === false ? "text-on-primary-fixed" : "text-on-error-container"
-              }`}
-            >
-              {result?.discrepancyFlag === false ? "Claim Verified" : "Mismatch Flagged"}
+            <h2 className={`font-bold text-body-md ${verified ? "text-on-primary-fixed" : "text-on-error-container"}`}>
+              {verified ? "Claim verified · No discrepancy found" : "Mismatch detected · Audit required"}
             </h2>
-            <p
-              className={`font-label-sm text-label-sm mt-1 ${
-                result?.discrepancyFlag === false ? "text-on-primary-fixed/80" : "text-on-error-container/80"
-              }`}
-            >
+            <p className={`text-label-sm mt-1 ${verified ? "text-on-primary-fixed/80" : "text-on-error-container/80"}`}>
               {result?.explanation ??
-                (result?.discrepancyFlag === false
-                  ? "Photo matches the claimed completion status."
-                  : "Significant discrepancy detected in project progress.")}
+                (verified
+                  ? "The photo is consistent with the claimed completion status."
+                  : "The photo shows only foundations built, less complete than officially reported.")}
             </p>
           </div>
         </div>
 
-        <div className="relative rounded-lg overflow-hidden border border-outline-variant mb-3 aspect-video grid grid-cols-2">
-          <div className="relative">
-            <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-on-surface/80 rounded-full">
-              <span className="font-label-sm text-label-sm text-white">Submitted Photo</span>
-            </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="w-full h-full object-cover"
-              alt="Submitted site photo"
-              src={capture?.photoDataUrl || FALLBACK_PHOTO_URL}
-            />
-          </div>
-          <div className="relative">
-            <div className="absolute top-2 right-2 z-10 px-2 py-1 bg-primary-container/80 rounded-full">
-              <span className="font-label-sm text-label-sm text-white">eGovAI Heatmap</span>
-            </div>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="w-full h-full object-cover"
-              alt="eGovAI analysis heatmap"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHIeVYrZSGE7t11kq-hnqV6XirywzoGUJaMqfHkswc_Xm3Idk4SeqJOsbp4ak39ne7u-RAxS6SyzCvRbJvWWzhh5_71NAUfUfvYh2D_bo4u0u3hdcuIR1KfC0BjOGYQn9hUiROleeyxm5LXkvw0UOfRLesWA6QLlkApSjen2ILGJknyf85TFcgQkSGpW4-8p7hz5fxUXf1sBUI9BE0mh4FhfhX3iADiq23W4EQYjbdKOtrjzCvNrEgUGmFr4bL5NMFFNGJUHN1b5k"
-            />
-          </div>
-        </div>
-
-        {capture && (
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-6 text-on-surface-variant">
-            {capture.hash && (
-              <span className="inline-flex items-center gap-1 font-label-sm text-label-sm">
-                <span className="material-symbols-outlined text-[14px]">tag</span>
-                {capture.hash.slice(0, 16)}…
+        {/* Section 4 — Verification details */}
+        <div className="bg-white border border-outline-variant rounded-2xl overflow-hidden">
+          <p className="px-5 pt-4 pb-2 font-bold text-on-surface">Verification details</p>
+          <div className="divide-y divide-outline-variant">
+            <div className="flex items-center gap-3 px-5 py-3">
+              <span className="material-symbols-outlined text-on-surface-variant text-[20px] shrink-0" aria-hidden="true">
+                link
               </span>
-            )}
-            {capture.gps && (
-              <span className="inline-flex items-center gap-1 font-label-sm text-label-sm">
-                <span className="material-symbols-outlined text-[14px]">location_on</span>
-                {capture.gps.lat.toFixed(5)}, {capture.gps.lng.toFixed(5)} (±{Math.round(capture.gps.accuracy)}m)
+              <span className="text-label-sm text-on-surface-variant w-20 shrink-0">Record</span>
+              <span className="flex-1 font-mono text-[13px] text-on-surface truncate">
+                {capture?.hash ? truncateMiddle(capture.hash) : "Not available"}
               </span>
-            )}
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col justify-between">
-            <div>
-              <p className="font-eyebrow text-eyebrow text-on-surface-variant mb-1">CLAIM STATUS</p>
-              <h3 className="font-headline text-headline-md text-on-surface">{claimed}%</h3>
-              <p className="font-label-md text-label-md text-on-surface-variant">(Complete)</p>
+              {capture?.hash && (
+                <button
+                  type="button"
+                  onClick={handleCopyHash}
+                  aria-label="Copy record hash"
+                  className="text-on-surface-variant hover:text-primary transition-colors shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {copied ? "check" : "content_copy"}
+                  </span>
+                </button>
+              )}
             </div>
-            <div className="mt-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-secondary"></span>
-              <span className="font-label-sm text-label-sm text-secondary">OFFICIAL DATA</span>
-            </div>
-          </div>
-          <div className="bg-surface-container-lowest border-2 border-primary-container p-4 rounded-lg flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-1 bg-primary-container text-white rounded-bl-lg">
-              <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1" }}>
-                auto_awesome
+            <div className="flex items-center gap-3 px-5 py-3">
+              <span className="material-symbols-outlined text-on-surface-variant text-[20px] shrink-0" aria-hidden="true">
+                location_on
               </span>
+              <span className="text-label-sm text-on-surface-variant w-20 shrink-0">Location</span>
+              <span className="flex-1 text-[13px] text-on-surface">{gpsText}</span>
             </div>
-            <div>
-              <p className="font-eyebrow text-eyebrow text-primary-container mb-1">AI DETECTION</p>
-              <h3 className="font-headline text-headline-md text-primary-container">{detected}%</h3>
-              <p className="font-label-md text-label-md text-on-surface-variant">
-                ({(result?.classification ?? "foundations_only").replace(/_/g, " ")})
-              </p>
-            </div>
-            <div className="mt-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
-              <span className="font-label-sm text-label-sm text-primary-container">EGOVAI TRIAGE</span>
+            <div className="flex items-center gap-3 px-5 py-3">
+              <span className="material-symbols-outlined text-on-surface-variant text-[20px] shrink-0" aria-hidden="true">
+                verified_user
+              </span>
+              <span className="text-label-sm text-on-surface-variant w-20 shrink-0">Checks</span>
+              <span className="flex-1 text-[13px] text-green-700 font-medium">
+                Identity verified · Location tagged
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-8">
-          <div className="h-6 px-3 rounded-full border border-outline-variant bg-surface-container flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-xs">verified</span>
-            <span className="font-label-sm text-label-sm">eVerify Valid</span>
-          </div>
-          <div className="h-6 px-3 rounded-full border border-outline-variant bg-surface-container flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-xs">location_on</span>
-            <span className="font-label-sm text-label-sm">Compass Tagged</span>
-          </div>
-          <div className="h-6 px-3 rounded-full border border-error/20 bg-error-container/30 flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-xs text-error">gavel</span>
-            <span className="font-label-sm text-label-sm text-error">Audit Required</span>
-          </div>
-        </div>
-
-        <div className="space-y-4">
+        {/* Section 5 — Actions */}
+        <div className="space-y-3 pt-1 pb-4">
           <button
             type="button"
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full bg-primary-container text-white py-4 rounded-full font-headline text-headline-md shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3 disabled:opacity-70"
+            className="w-full bg-primary text-white py-4 rounded-full font-bold text-body-md active:scale-95 transition-transform flex items-center justify-center gap-3 disabled:opacity-70"
           >
-            {submitting ? (
-              <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-            ) : (
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                assignment_late
-              </span>
-            )}
-            {submitting ? "Submitting…" : "Submit Official Report"}
+            {submitting && <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
+            {submitting ? "Submitting…" : "File discrepancy report"}
           </button>
           <Link
             href="/reports"
-            className="w-full border border-primary-container text-primary-container py-4 rounded-full font-label-md text-label-md active:bg-surface-container transition-colors flex items-center justify-center"
+            className="w-full border border-outline-variant text-on-surface-variant py-4 rounded-full font-label-md text-label-md active:bg-surface-container transition-colors flex items-center justify-center"
           >
-            Save to My Reports
+            Save to my reports
           </Link>
         </div>
       </div>
-
-      <BottomNav active="none" />
     </main>
   );
 }
