@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 import { getPendingCapture, type CaptureBundle } from "@/lib/capture";
 
@@ -17,11 +17,13 @@ const FALLBACK_PHOTO_URL =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuD2A9vEK5i0CdoAg3BwRfu_PXZCefwcaU5SHKBq5G5QMcF_W_vVshdK7hpwxpGrb_4yMLhGEbjG4WT-nw-ZTI7mtlzvMx2nj-4JmBNtOGlSSb60Meo0BkNoinQhVR3H0grkyHjBQCzkmeQrcpFjoKovfpQ3s7vei9LtlLlcveXiDgmzS8OgmloB3bV09I1dVGKR47X8x0E5kEae2fPXUtOEd0FVvIRmALN8E9JZDYEkdI7XBWrdUiArXP0usiDiHrUGMz2YXcEwA-k";
 
 function AiVerificationResultInner() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get("project") ?? "1";
 
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   // Falls back to the stock photo below if this screen is opened directly
   // (e.g. deep link, or capture was skipped) so it never renders blank.
@@ -67,6 +69,39 @@ function AiVerificationResultInner() {
   const offset = circumference - (progress / 100) * circumference;
   const claimed = result?.claimedPct ?? 85;
   const detected = result?.detectedPct ?? 40;
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    let submissionId: string | null = null;
+
+    // Best-effort: a DB hiccup shouldn't strand the citizen mid-flow, so any
+    // failure here just falls through to the confirmed screen without a
+    // submissionId, which renders its own local fallback data instead.
+    if (capture?.hash) {
+      try {
+        const res = await fetch("/api/submissions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            projectId,
+            photoHash: capture.hash,
+            photoDataUrl: capture.photoDataUrl,
+            gps: capture.gps,
+            capturedAt: capture.capturedAt,
+            aiResult: result ?? undefined,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          submissionId = data.submission?.id ?? null;
+        }
+      } catch {
+        // Backend unreachable — swallow and continue below.
+      }
+    }
+
+    router.push(submissionId ? `/report/confirmed?submissionId=${submissionId}` : "/report/confirmed");
+  };
 
   return (
     <main className="w-full max-w-[375px] min-h-screen mx-auto bg-background flex flex-col relative pb-32">
@@ -247,15 +282,21 @@ function AiVerificationResultInner() {
         </div>
 
         <div className="space-y-4">
-          <Link
-            href="/report/confirmed"
-            className="w-full bg-primary-container text-white py-4 rounded-full font-headline text-headline-md shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3"
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="w-full bg-primary-container text-white py-4 rounded-full font-headline text-headline-md shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-3 disabled:opacity-70"
           >
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-              assignment_late
-            </span>
-            Submit Official Report
-          </Link>
+            {submitting ? (
+              <span className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            ) : (
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                assignment_late
+              </span>
+            )}
+            {submitting ? "Submitting…" : "Submit Official Report"}
+          </button>
           <Link
             href="/reports"
             className="w-full border border-primary-container text-primary-container py-4 rounded-full font-label-md text-label-md active:bg-surface-container transition-colors flex items-center justify-center"

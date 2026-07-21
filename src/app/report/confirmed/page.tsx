@@ -1,10 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { clearPendingCapture, getPendingCapture } from "@/lib/capture";
 
-export default function SubmissionConfirmedPage() {
+interface SubmissionRecord {
+  id: string;
+  photoHash: string;
+  status: string;
+  dispute: { status: string } | null;
+}
+
+function SubmissionConfirmedInner() {
+  const searchParams = useSearchParams();
+  const submissionId = searchParams.get("submissionId");
+
   const [timestamp] = useState(
     () =>
       new Date().toLocaleDateString("en-US", {
@@ -17,19 +28,28 @@ export default function SubmissionConfirmedPage() {
         hour12: false,
       }) + " PHT"
   );
-  // This is where Track C's submission endpoint will eventually be called
-  // with the bundle (photo + hash + GPS); for now the capture module's
-  // output is just surfaced here to prove the pipeline end-to-end.
-  const [hash] = useState<string | null>(() =>
+  // Local fallback in case the backend is unreachable or this screen is
+  // opened without a submissionId — the demo should never render blank.
+  const [localHash] = useState<string | null>(() =>
     typeof window !== "undefined" ? getPendingCapture()?.hash ?? null : null
   );
-  const [refId] = useState(
+  const [fallbackRefId] = useState(
     () => `#ES-${Math.floor(10000 + Math.random() * 89999)}-TX`
   );
+  const [submission, setSubmission] = useState<SubmissionRecord | null>(null);
 
   useEffect(() => {
+    if (submissionId) {
+      fetch(`/api/submissions/${submissionId}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => setSubmission(data?.submission ?? null))
+        .catch(() => setSubmission(null));
+    }
     clearPendingCapture();
-  }, []);
+  }, [submissionId]);
+
+  const refId = submission ? `#${submission.id}` : fallbackRefId;
+  const hash = submission?.photoHash ?? localHash;
 
   return (
     <main className="relative w-full min-h-screen max-w-[375px] mx-auto bg-surface text-on-surface flex flex-col items-center justify-between px-margin-mobile py-12 overflow-hidden">
@@ -85,6 +105,14 @@ export default function SubmissionConfirmedPage() {
               </div>
             )}
           </div>
+          {submission?.dispute && (
+            <div className="pt-2 border-t border-outline-variant/50">
+              <div className="flex items-center gap-2 text-error">
+                <span className="material-symbols-outlined text-[18px]">flag</span>
+                <span className="font-label-md text-label-md">Flagged for agency review</span>
+              </div>
+            </div>
+          )}
           <div className="pt-2 border-t border-outline-variant/50">
             <div className="flex items-center gap-2 text-secondary">
               <span className="material-symbols-outlined text-[18px]">verified</span>
@@ -106,5 +134,13 @@ export default function SubmissionConfirmedPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function SubmissionConfirmedPage() {
+  return (
+    <Suspense fallback={null}>
+      <SubmissionConfirmedInner />
+    </Suspense>
   );
 }

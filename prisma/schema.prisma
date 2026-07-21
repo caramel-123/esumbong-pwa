@@ -1,0 +1,141 @@
+// eSumbong — Track C backend schema.
+// Modular monolith: one Postgres database, one Prisma schema, service
+// boundaries enforced in code (src/server/modules/*) rather than by
+// splitting into separate services/databases.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Connection URL lives in prisma.config.ts (Prisma 7 moved it out of the
+// schema file) — the PrismaClient itself connects via the pg driver
+// adapter in src/server/db.ts, not through this datasource block.
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProjectStatus {
+  verified
+  pending
+  flagged
+}
+
+enum SubmissionStatus {
+  received
+  cleared
+  flagged
+}
+
+enum DisputeStatus {
+  flagged
+  agency_notified
+  responded
+  resolved
+}
+
+// No PII stored — identity confirmation happens once via eVerify/eGovPH SSO
+// (Track D) and only a pseudonymous reference is kept here.
+model User {
+  id        String   @id @default(cuid())
+  pseudonym String   @unique
+  createdAt DateTime @default(now())
+
+  submissions Submission[]
+  disputes    Dispute[]
+}
+
+// Cached/synced from Compass (Track D). This is eSumbong's own registry —
+// Compass supplies agency/budget reference data, not contractor names or
+// completion percentages (those arrive via citizen submissions).
+model Project {
+  id              String    @id @default(cuid())
+  contractId      String    @unique
+  name            String
+  agency          String
+  location        String
+  budgetPhp       Decimal   @db.Decimal(14, 2)
+  claimedPct      Int
+  actualPct       Int?
+  status          ProjectStatus @default(pending)
+  description     String?
+  compassSyncedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  milestoneClaims MilestoneClaim[]
+  submissions     Submission[]
+
+  @@index([status])
+}
+
+// Official claimed-completion milestones as reported by the implementing
+// agency — the baseline that citizen submissions get checked against.
+model MilestoneClaim {
+  id         String   @id @default(cuid())
+  project    Project  @relation(fields: [projectId], references: [id])
+  projectId  String
+  claimedPct Int
+  claimedAt  DateTime @default(now())
+  sourceDoc  String?
+
+  @@index([projectId])
+}
+
+// One citizen report: a photo + GPS fix + client-side hash captured in
+// Track B, ingested here. photoDataUrl holds the JPEG data URL directly for
+// demo simplicity — a production build would put the blob in object storage
+// and store only the URL here.
+model Submission {
+  id           String   @id @default(cuid())
+  project      Project  @relation(fields: [projectId], references: [id])
+  projectId    String
+  user         User?    @relation(fields: [userId], references: [id])
+  userId       String?
+
+  photoDataUrl String?
+  photoHash    String
+  gpsLat       Float?
+  gpsLng       Float?
+  gpsAccuracy  Float?
+  capturedAt   DateTime
+
+  // AI verdict is produced client-side today (Track F's mock/model); this
+  // just persists whatever came back so the dispute workflow has a trigger.
+  aiClaimedPct     Int?
+  aiDetectedPct    Int?
+  aiClassification String?
+  aiDiscrepancy    Boolean?
+
+  // Set once Track E's anchoring service runs; null until then.
+  anchorRef String?
+
+  status    SubmissionStatus @default(received)
+  createdAt DateTime         @default(now())
+
+  dispute Dispute?
+
+  @@index([projectId])
+  @@index([status])
+}
+
+// Flagged → Agency Notified → Responded → Resolved, enforced in
+// src/server/modules/disputes/service.ts (no skipping stages).
+model Dispute {
+  id           String    @id @default(cuid())
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  submissionId String    @unique
+  reporter     User?     @relation(fields: [reporterId], references: [id])
+  reporterId   String?
+
+  status           DisputeStatus @default(flagged)
+  agencyNotifiedAt DateTime?
+  respondedAt      DateTime?
+  resolvedAt       DateTime?
+  agencyResponse   String?
+  resolutionNote   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
