@@ -52,6 +52,7 @@ model Project {
   contractId      String    @unique
   name            String
   agency          String
+  contractor      String?
   location        String
   budgetPhp       Decimal   @db.Decimal(14, 2)
   claimedPct      Int
@@ -138,4 +139,18 @@ model Dispute {
   updatedAt DateTime @updatedAt
 
   @@index([status])
+}
+
+// eGovChain (Track E) — no real sandbox credentials exist for this
+// hackathon, so this is an internal append-only mock: each block commits to
+// the previous block's hash, so editing any past row breaks every block
+// after it. That's the actual tamper-evident property being demonstrated,
+// not just a label on the confirmation screen.
+model ChainBlock {
+  id           Int      @id @default(autoincrement())
+  submissionId String?  @unique
+  previousHash String?
+  payloadHash  String
+  blockHash    String   @unique
+  createdAt    DateTime @default(now())
 }

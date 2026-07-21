@@ -11,6 +11,7 @@ interface AnalysisResult {
   detectedPct: number;
   classification: string;
   discrepancyFlag: boolean;
+  explanation?: string;
 }
 
 const FALLBACK_PHOTO_URL =
@@ -52,6 +53,7 @@ function AiVerificationResultInner() {
           detectedPct: data.detectedPct,
           classification: data.classification,
           discrepancyFlag: data.discrepancyFlag,
+          explanation: data.explanation,
         });
         setTimeout(() => setLoading(false), 600);
       })
@@ -185,9 +187,10 @@ function AiVerificationResultInner() {
                 result?.discrepancyFlag === false ? "text-on-primary-fixed/80" : "text-on-error-container/80"
               }`}
             >
-              {result?.discrepancyFlag === false
-                ? "Photo matches the claimed completion status."
-                : "Significant discrepancy detected in project progress."}
+              {result?.explanation ??
+                (result?.discrepancyFlag === false
+                  ? "Photo matches the claimed completion status."
+                  : "Significant discrepancy detected in project progress.")}
             </p>
           </div>
         </div>

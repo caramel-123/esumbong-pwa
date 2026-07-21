@@ -5,6 +5,7 @@ export interface Project {
   name: string;
   contractId: string;
   agency: string;
+  contractor: string;
   location: string;
   budget: string;
   claimedPct: number;
@@ -19,6 +20,7 @@ export const projects: Project[] = [
     name: "Quezon City Flood Control Phase 2",
     contractId: "DPWH-NCR-2024-Q2",
     agency: "DPWH",
+    contractor: "Bantay Ilog Construction Corp.",
     location: "Barangay Talayan, District 1",
     budget: "₱120M",
     claimedPct: 85,
@@ -32,6 +34,7 @@ export const projects: Project[] = [
     name: "Pasig River Esplanade Phase 4",
     contractId: "DOTR-2023-B102",
     agency: "DOTr",
+    contractor: "Ilaw at Tubig Builders Inc.",
     location: "Pasig City",
     budget: "₱85M",
     claimedPct: 92,
@@ -45,6 +48,7 @@ export const projects: Project[] = [
     name: "Mandaluyong Bridge Rehabilitation",
     contractId: "DPWH-NCR-2024-001",
     agency: "DPWH",
+    contractor: "Tulay Bakal Engineering Corp.",
     location: "Mandaluyong City",
     budget: "₱64M",
     claimedPct: 65,
@@ -52,6 +56,34 @@ export const projects: Project[] = [
     status: "flagged",
     description:
       "Structural rehabilitation of the Boni-Hulo bridge span, including reinforcement of support columns and resurfacing of the roadway deck.",
+  },
+  {
+    id: "4",
+    name: "Caloocan Elementary School Building Expansion",
+    contractId: "DEPED-NCR-2024-014",
+    agency: "DepEd",
+    contractor: "Haligi Construction Corporation",
+    location: "Caloocan City",
+    budget: "₱32M",
+    claimedPct: 55,
+    actualPct: 50,
+    status: "pending",
+    description:
+      "Construction of a new three-storey, six-classroom building to ease overcrowding at an existing public elementary school, including accessibility ramps and a covered walkway.",
+  },
+  {
+    id: "5",
+    name: "Marikina Riverside Pumping Station Upgrade",
+    contractId: "MWSS-2023-P088",
+    agency: "MWSS",
+    contractor: "Tatag Infra Builders Inc.",
+    location: "Marikina City",
+    budget: "₱48M",
+    claimedPct: 100,
+    actualPct: 98,
+    status: "verified",
+    description:
+      "Capacity upgrade of an existing flood-control pumping station along the Marikina River, including new pump units and an automated water-level monitoring system.",
   },
 ];
 

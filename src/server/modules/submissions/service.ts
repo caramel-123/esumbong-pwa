@@ -1,5 +1,6 @@
 import { prisma } from "@/server/db";
 import { createDisputeForSubmission } from "@/server/modules/disputes/service";
+import { anchorSubmission } from "@/server/modules/anchoring/service";
 
 export interface IngestSubmissionInput {
   projectId: string;
@@ -47,7 +48,9 @@ export async function ingestSubmission(input: IngestSubmissionInput) {
     await createDisputeForSubmission(submission.id, input.userId);
   }
 
-  return submission;
+  // Anchor every submission to eGovChain right away so the confirmation
+  // screen always has a real anchor reference to show, not just a claim.
+  return anchorSubmission(submission.id);
 }
 
 export function getSubmission(id: string) {

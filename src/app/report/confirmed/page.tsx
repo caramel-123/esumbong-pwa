@@ -8,6 +8,7 @@ import { clearPendingCapture, getPendingCapture } from "@/lib/capture";
 interface SubmissionRecord {
   id: string;
   photoHash: string;
+  anchorRef: string | null;
   status: string;
   dispute: { status: string } | null;
 }
@@ -48,7 +49,7 @@ function SubmissionConfirmedInner() {
     clearPendingCapture();
   }, [submissionId]);
 
-  const refId = submission ? `#${submission.id}` : fallbackRefId;
+  const refId = submission?.anchorRef ?? fallbackRefId;
   const hash = submission?.photoHash ?? localHash;
 
   return (

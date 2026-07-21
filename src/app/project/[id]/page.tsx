@@ -98,6 +98,12 @@ export default async function ProjectDetailsPage({
                   </div>
                 </div>
               </div>
+              <div className="col-span-2 pt-4 border-t border-outline-variant/30">
+                <span className="font-label-sm text-label-sm text-on-surface-variant mb-1 block">
+                  Contractor
+                </span>
+                <span className="font-label-md text-label-md text-on-surface">{project.contractor}</span>
+              </div>
             </div>
           </div>
         </div>

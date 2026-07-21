@@ -37,6 +37,7 @@ export async function syncFromCompass() {
         contractId: compass.contractId,
         name: seed.name,
         agency: compass.agency,
+        contractor: seed.contractor,
         location: seed.location,
         budgetPhp: parseBudgetToNumber(compass.budgetAllocated),
         claimedPct: seed.claimedPct,
@@ -47,6 +48,7 @@ export async function syncFromCompass() {
       },
       update: {
         agency: compass.agency,
+        contractor: seed.contractor,
         budgetPhp: parseBudgetToNumber(compass.budgetAllocated),
         compassSyncedAt: new Date(),
       },
