@@ -27,17 +27,17 @@ export default function DesktopNav({
             Dashboard
           </Link>
           <Link href="/features" className={linkClass("features")}>
-            Features
+            How It Works
           </Link>
-          <Link href="/landing" className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
-            About
+          <Link href="/landing#faqs" className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">
+            FAQs
           </Link>
         </div>
         <Link
           href="/home"
-          className="bg-primary-container text-white px-6 py-2 rounded-full font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all shadow-md"
+          className="bg-primary text-white px-6 py-2 rounded-full font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all shadow-md"
         >
-          Report Project
+          Report a Project
         </Link>
       </div>
     </nav>

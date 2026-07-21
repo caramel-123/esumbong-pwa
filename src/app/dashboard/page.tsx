@@ -1,4 +1,5 @@
 import DesktopNav from "@/components/DesktopNav";
+import Eyebrow from "@/components/Eyebrow";
 import { projects } from "@/lib/mock-data";
 
 const statusBadge: Record<string, string> = {
@@ -88,13 +89,14 @@ export default function PublicDashboardDesktopPage() {
           </div>
         </aside>
 
-        <main className="flex-1 overflow-y-auto bg-surface-container-low p-margin-desktop space-y-8">
+        <main className="flex-1 overflow-y-auto bg-surface p-margin-desktop space-y-10">
           <div className="flex justify-between items-end">
             <div>
-              <h1 className="font-headline text-headline-lg text-on-background">
-                Public Accountability Dashboard
+              <Eyebrow>PUBLIC ACCOUNTABILITY</Eyebrow>
+              <h1 className="font-black text-[32px] md:text-[40px] leading-tight text-on-background">
+                1,204 projects. <span className="text-primary">Every claim checked.</span>
               </h1>
-              <p className="text-body-lg text-on-surface-variant">
+              <p className="text-body-lg text-on-surface-variant mt-2">
                 Real-time infrastructure monitoring powered by civic reports.
               </p>
             </div>
@@ -104,27 +106,27 @@ export default function PublicDashboardDesktopPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="bg-white border border-outline-variant rounded-lg p-6 flex items-center gap-6">
+            <div className="bg-white border border-outline-variant rounded-2xl p-6 flex items-center gap-6 motion-safe:hover:-translate-y-0.5 motion-safe:transition-transform">
               <div className="w-14 h-14 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
-                <span className="material-symbols-outlined text-[32px]">task_alt</span>
+                <span className="material-symbols-outlined text-[32px]" aria-hidden="true">task_alt</span>
               </div>
               <div>
                 <p className="text-on-surface-variant font-label-md">Audit Completion</p>
                 <h2 className="text-headline-md font-black">94.2%</h2>
               </div>
             </div>
-            <div className="bg-white border border-outline-variant rounded-lg p-6 flex items-center gap-6">
+            <div className="bg-white border border-outline-variant rounded-2xl p-6 flex items-center gap-6 motion-safe:hover:-translate-y-0.5 motion-safe:transition-transform">
               <div className="w-14 h-14 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary">
-                <span className="material-symbols-outlined text-[32px]">warning</span>
+                <span className="material-symbols-outlined text-[32px]" aria-hidden="true">warning</span>
               </div>
               <div>
                 <p className="text-on-surface-variant font-label-md">Anomalies Detected</p>
                 <h2 className="text-headline-md font-black">12 Cases</h2>
               </div>
             </div>
-            <div className="bg-white border border-outline-variant rounded-lg p-6 flex items-center gap-6">
+            <div className="bg-white border border-outline-variant rounded-2xl p-6 flex items-center gap-6 motion-safe:hover:-translate-y-0.5 motion-safe:transition-transform">
               <div className="w-14 h-14 rounded-full bg-surface-container flex items-center justify-center text-on-surface">
-                <span className="material-symbols-outlined text-[32px]">account_balance</span>
+                <span className="material-symbols-outlined text-[32px]" aria-hidden="true">account_balance</span>
               </div>
               <div>
                 <p className="text-on-surface-variant font-label-md">Active Agencies</p>
@@ -133,9 +135,9 @@ export default function PublicDashboardDesktopPage() {
             </div>
           </div>
 
-          <div className="bg-white border border-outline-variant rounded-lg overflow-hidden">
+          <div className="bg-white border border-outline-variant rounded-2xl overflow-hidden">
             <div className="p-6 border-b border-outline-variant flex justify-between items-center">
-              <h2 className="text-headline-md">Project Breakdown</h2>
+              <h2 className="text-headline-md font-bold">Project Breakdown</h2>
               <button className="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-full text-label-md hover:bg-surface-container transition-colors">
                 <span className="material-symbols-outlined text-[18px]">download</span> Export CSV
               </button>
