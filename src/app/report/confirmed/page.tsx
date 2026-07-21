@@ -2,17 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { clearPendingCapture, getPendingCapture } from "@/lib/capture";
 
 export default function SubmissionConfirmedPage() {
-  const [timestamp, setTimestamp] = useState("");
-  const [refId] = useState(
-    () => `#ES-${Math.floor(10000 + Math.random() * 89999)}-TX`
-  );
-
-  useEffect(() => {
-    const now = new Date();
-    setTimestamp(
-      now.toLocaleDateString("en-US", {
+  const [timestamp] = useState(
+    () =>
+      new Date().toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -21,7 +16,19 @@ export default function SubmissionConfirmedPage() {
         second: "2-digit",
         hour12: false,
       }) + " PHT"
-    );
+  );
+  // This is where Track C's submission endpoint will eventually be called
+  // with the bundle (photo + hash + GPS); for now the capture module's
+  // output is just surfaced here to prove the pipeline end-to-end.
+  const [hash] = useState<string | null>(() =>
+    typeof window !== "undefined" ? getPendingCapture()?.hash ?? null : null
+  );
+  const [refId] = useState(
+    () => `#ES-${Math.floor(10000 + Math.random() * 89999)}-TX`
+  );
+
+  useEffect(() => {
+    clearPendingCapture();
   }, []);
 
   return (
@@ -71,6 +78,12 @@ export default function SubmissionConfirmedPage() {
               <span className="font-eyebrow text-eyebrow text-on-surface-variant opacity-60">TIMESTAMP</span>
               <span className="font-body-md text-body-md text-on-surface">{timestamp}</span>
             </div>
+            {hash && (
+              <div className="flex flex-col">
+                <span className="font-eyebrow text-eyebrow text-on-surface-variant opacity-60">PHOTO HASH</span>
+                <span className="font-label-sm text-label-sm text-on-surface break-all">{hash}</span>
+              </div>
+            )}
           </div>
           <div className="pt-2 border-t border-outline-variant/50">
             <div className="flex items-center gap-2 text-secondary">

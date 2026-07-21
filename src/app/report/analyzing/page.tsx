@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
+import { getPendingCapture, type CaptureBundle } from "@/lib/capture";
 
 interface AnalysisResult {
   claimedPct: number;
@@ -12,6 +13,9 @@ interface AnalysisResult {
   discrepancyFlag: boolean;
 }
 
+const FALLBACK_PHOTO_URL =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuD2A9vEK5i0CdoAg3BwRfu_PXZCefwcaU5SHKBq5G5QMcF_W_vVshdK7hpwxpGrb_4yMLhGEbjG4WT-nw-ZTI7mtlzvMx2nj-4JmBNtOGlSSb60Meo0BkNoinQhVR3H0grkyHjBQCzkmeQrcpFjoKovfpQ3s7vei9LtlLlcveXiDgmzS8OgmloB3bV09I1dVGKR47X8x0E5kEae2fPXUtOEd0FVvIRmALN8E9JZDYEkdI7XBWrdUiArXP0usiDiHrUGMz2YXcEwA-k";
+
 function AiVerificationResultInner() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get("project") ?? "1";
@@ -19,6 +23,11 @@ function AiVerificationResultInner() {
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  // Falls back to the stock photo below if this screen is opened directly
+  // (e.g. deep link, or capture was skipped) so it never renders blank.
+  const [capture] = useState<CaptureBundle | null>(() =>
+    typeof window !== "undefined" ? getPendingCapture() : null
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -148,7 +157,7 @@ function AiVerificationResultInner() {
           </div>
         </div>
 
-        <div className="relative rounded-lg overflow-hidden border border-outline-variant mb-6 aspect-video grid grid-cols-2">
+        <div className="relative rounded-lg overflow-hidden border border-outline-variant mb-3 aspect-video grid grid-cols-2">
           <div className="relative">
             <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-on-surface/80 rounded-full">
               <span className="font-label-sm text-label-sm text-white">Submitted Photo</span>
@@ -157,7 +166,7 @@ function AiVerificationResultInner() {
             <img
               className="w-full h-full object-cover"
               alt="Submitted site photo"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2A9vEK5i0CdoAg3BwRfu_PXZCefwcaU5SHKBq5G5QMcF_W_vVshdK7hpwxpGrb_4yMLhGEbjG4WT-nw-ZTI7mtlzvMx2nj-4JmBNtOGlSSb60Meo0BkNoinQhVR3H0grkyHjBQCzkmeQrcpFjoKovfpQ3s7vei9LtlLlcveXiDgmzS8OgmloB3bV09I1dVGKR47X8x0E5kEae2fPXUtOEd0FVvIRmALN8E9JZDYEkdI7XBWrdUiArXP0usiDiHrUGMz2YXcEwA-k"
+              src={capture?.photoDataUrl || FALLBACK_PHOTO_URL}
             />
           </div>
           <div className="relative">
@@ -172,6 +181,23 @@ function AiVerificationResultInner() {
             />
           </div>
         </div>
+
+        {capture && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-6 text-on-surface-variant">
+            {capture.hash && (
+              <span className="inline-flex items-center gap-1 font-label-sm text-label-sm">
+                <span className="material-symbols-outlined text-[14px]">tag</span>
+                {capture.hash.slice(0, 16)}…
+              </span>
+            )}
+            {capture.gps && (
+              <span className="inline-flex items-center gap-1 font-label-sm text-label-sm">
+                <span className="material-symbols-outlined text-[14px]">location_on</span>
+                {capture.gps.lat.toFixed(5)}, {capture.gps.lng.toFixed(5)} (±{Math.round(capture.gps.accuracy)}m)
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col justify-between">

@@ -2,29 +2,41 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  captureFrameAsBlob,
+  getCurrentPosition,
+  hashBlob,
+  savePendingCapture,
+  type CaptureGps,
+} from "@/lib/capture";
+
+type GpsStatus = "locating" | "ready" | "denied";
 
 function CameraCaptureInner() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get("project") ?? "1";
-  const [timestamp, setTimestamp] = useState("");
+  const [timestamp] = useState(() =>
+    new Date().toLocaleString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+  );
   const [flash, setFlash] = useState(false);
+  const [capturing, setCapturing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [cameraError, setCameraError] = useState(false);
 
-  useEffect(() => {
-    const now = new Date();
-    setTimestamp(
-      now.toLocaleString("en-US", {
-        month: "short",
-        day: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      })
-    );
+  const [gps, setGps] = useState<CaptureGps | null>(null);
+  const [gpsStatus, setGpsStatus] = useState<GpsStatus>("locating");
 
+  useEffect(() => {
     // In-app camera only, no gallery picker. Falls back to the
     // background placeholder image if permission is denied.
     navigator.mediaDevices
@@ -35,17 +47,68 @@ function CameraCaptureInner() {
         }
       })
       .catch(() => setCameraError(true));
+
+    // Best-effort early fix so the seal isn't blank while the reporter frames
+    // the shot; the shutter itself re-reads position for the freshest fix.
+    getCurrentPosition()
+      .then((pos) => {
+        setGps(pos);
+        setGpsStatus("ready");
+      })
+      .catch(() => setGpsStatus("denied"));
   }, []);
 
-  const handleShutter = () => {
+  const handleShutter = async () => {
+    if (capturing) return;
+    setCapturing(true);
     setFlash(true);
     setTimeout(() => setFlash(false), 300);
     if (navigator.vibrate) navigator.vibrate(50);
+
+    let photoDataUrl = "";
+    let hash: string | null = null;
+
+    if (!cameraError && videoRef.current && canvasRef.current) {
+      const blob = await captureFrameAsBlob(videoRef.current, canvasRef.current);
+      if (blob) {
+        hash = await hashBlob(blob);
+        photoDataUrl = canvasRef.current.toDataURL("image/jpeg", 0.85);
+      }
+    }
+
+    // Re-read GPS at the moment of shutter press for the freshest possible
+    // fix; fall back to the early on-mount reading if this one fails.
+    let capturedGps = gps;
+    try {
+      capturedGps = await getCurrentPosition();
+      setGps(capturedGps);
+      setGpsStatus("ready");
+    } catch {
+      if (!capturedGps) setGpsStatus("denied");
+    }
+
+    savePendingCapture({
+      projectId,
+      photoDataUrl,
+      hash,
+      gps: capturedGps,
+      capturedAt: new Date().toISOString(),
+    });
+
+    router.push(`/report/analyzing?project=${projectId}`);
   };
+
+  const gpsLabel =
+    gpsStatus === "ready" && gps
+      ? `${gps.lat.toFixed(4)}° N, ${gps.lng.toFixed(4)}° E`
+      : gpsStatus === "denied"
+      ? "Location unavailable"
+      : "Locating…";
 
   return (
     <main className="relative w-full h-screen max-w-[375px] mx-auto overflow-hidden bg-black flex flex-col">
       {flash && <div className="fixed inset-0 bg-white z-[100] transition-opacity duration-300" />}
+      <canvas ref={canvasRef} className="hidden" />
 
       <div className="absolute inset-0 z-0">
         {!cameraError ? (
@@ -92,8 +155,14 @@ function CameraCaptureInner() {
           </div>
           <div className="flex items-center gap-3 text-white/90">
             <div className="flex items-center gap-1.5 border-r border-white/20 pr-3">
-              <span className="material-symbols-outlined text-[16px] text-white/70">location_on</span>
-              <span className="font-label-sm text-label-sm tracking-tight">14.5995° N, 120.9842° E</span>
+              <span
+                className={`material-symbols-outlined text-[16px] ${
+                  gpsStatus === "denied" ? "text-error" : "text-white/70"
+                }`}
+              >
+                {gpsStatus === "locating" ? "location_searching" : "location_on"}
+              </span>
+              <span className="font-label-sm text-label-sm tracking-tight">{gpsLabel}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[16px] text-white/70">schedule</span>
@@ -132,25 +201,31 @@ function CameraCaptureInner() {
           </span>
         </div>
         <div className="flex items-center justify-center w-full px-12">
-          <Link
-            href={`/report/analyzing?project=${projectId}`}
+          <button
+            type="button"
             onClick={handleShutter}
-            className="relative group"
+            disabled={capturing}
+            aria-label="Capture photo"
+            className="relative group disabled:opacity-70"
           >
             <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center p-1 transition-transform active:scale-95">
               <div
                 className="w-full h-full rounded-full bg-primary-container flex items-center justify-center shadow-lg"
                 style={{ boxShadow: "0 0 20px rgba(1, 62, 208, 0.4)" }}
               >
-                <span
-                  className="material-symbols-outlined text-white text-3xl"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  photo_camera
-                </span>
+                {capturing ? (
+                  <span className="w-6 h-6 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <span
+                    className="material-symbols-outlined text-white text-3xl"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    photo_camera
+                  </span>
+                )}
               </div>
             </div>
-          </Link>
+          </button>
         </div>
       </footer>
     </main>
