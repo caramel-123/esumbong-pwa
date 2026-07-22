@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import BottomNav from "@/components/BottomNav";
@@ -51,6 +51,7 @@ export default function MapPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category>("All Issues");
   const [focus, setFocus] = useState<FocusTarget | undefined>();
+  const focusKey = useRef(0);
   const [activeId, setActiveId] = useState<string | undefined>();
 
   // markers come from real project coordinates, filtered by category chip
@@ -75,7 +76,8 @@ export default function MapPage() {
   }, [query]);
 
   function goToPlace(pl: Place) {
-    setFocus({ lat: pl.lat, lng: pl.lng, zoom: 16, key: Date.now() });
+    focusKey.current += 1;
+    setFocus({ lat: pl.lat, lng: pl.lng, zoom: 16, key: focusKey.current });
     setQuery("");
     if (pl.projectId) setActiveId(pl.projectId);
   }
@@ -83,7 +85,8 @@ export default function MapPage() {
   function selectMarker(id: string) {
     setActiveId(id);
     const p = getProject(id);
-    setFocus({ lat: p.lat, lng: p.lng, zoom: 16, key: Date.now() });
+    focusKey.current += 1;
+    setFocus({ lat: p.lat, lng: p.lng, zoom: 16, key: focusKey.current });
   }
 
   const active = activeId ? getProject(activeId) : undefined;

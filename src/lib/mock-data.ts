@@ -5,6 +5,7 @@ export interface Project {
   name: string;
   contractId: string;
   agency: string;
+  contractor: string;
   location: string;
   budget: string;
   claimedPct: number;
@@ -21,6 +22,7 @@ export const projects: Project[] = [
     name: "Quezon City Flood Control Phase 2",
     contractId: "DPWH-NCR-2024-Q2",
     agency: "DPWH",
+    contractor: "Talayan Builders Consortium, Inc.",
     location: "Barangay Talayan, District 1",
     budget: "₱120M",
     claimedPct: 85,
@@ -36,6 +38,7 @@ export const projects: Project[] = [
     name: "Pasig River Esplanade Phase 4",
     contractId: "DOTR-2023-B102",
     agency: "DOTr",
+    contractor: "Riverside Infra Development Corp.",
     location: "Pasig City",
     budget: "₱85M",
     claimedPct: 92,
@@ -51,6 +54,7 @@ export const projects: Project[] = [
     name: "Mandaluyong Bridge Rehabilitation",
     contractId: "DPWH-NCR-2024-001",
     agency: "DPWH",
+    contractor: "Boni-Hulo Structural Works Inc.",
     location: "Mandaluyong City",
     budget: "₱64M",
     claimedPct: 65,

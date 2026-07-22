@@ -11,7 +11,7 @@ const quickActions = [
   { label: "My Reports", icon: "history", href: "/reports" },
 ];
 
-const statusMeta: Record
+const statusMeta: Record<
   ProjectStatus,
   { label: string; badgeBg: string; badgeText: string; border: string; icon: string; iconBg: string }
 > = {

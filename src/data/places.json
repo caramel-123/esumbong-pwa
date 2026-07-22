@@ -1,0 +1,26 @@
+[
+  {
+    "id": "place-1",
+    "name": "Quezon City Flood Control Phase 2",
+    "label": "Barangay Talayan, District 1 · Quezon City",
+    "lat": 14.6217,
+    "lng": 121.0148,
+    "projectId": "1"
+  },
+  {
+    "id": "place-2",
+    "name": "Pasig River Esplanade Phase 4",
+    "label": "Pasig City",
+    "lat": 14.5764,
+    "lng": 121.0851,
+    "projectId": "2"
+  },
+  {
+    "id": "place-3",
+    "name": "Mandaluyong Bridge Rehabilitation",
+    "label": "Mandaluyong City",
+    "lat": 14.5738,
+    "lng": 121.0357,
+    "projectId": "3"
+  }
+]
