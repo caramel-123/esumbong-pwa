@@ -1,6 +1,8 @@
 import Link from "next/link";
 import AppBar from "@/components/AppBar";
 import BottomNav from "@/components/BottomNav";
+import MotionReveal from "@/components/MotionReveal";
+import AutoAnimateList from "@/components/AutoAnimateList";
 import { projects, type ProjectStatus } from "@/lib/mock-data";
 
 const quickActions = [
@@ -9,7 +11,7 @@ const quickActions = [
   { label: "My Reports", icon: "history", href: "/reports" },
 ];
 
-const statusMeta: Record<
+const statusMeta: Record
   ProjectStatus,
   { label: string; badgeBg: string; badgeText: string; border: string; icon: string; iconBg: string }
 > = {
@@ -41,11 +43,12 @@ const statusMeta: Record<
 
 export default function HomeDashboardPage() {
   return (
-    <main className="flex flex-col min-h-dvh max-w-[375px] mx-auto bg-background">
+    <main className="flex flex-col min-h-screen max-w-[375px] mx-auto bg-background">
       <AppBar />
 
       <div className="flex-1 px-margin-mobile pt-5 pb-24 space-y-6">
         {/* Greeting + civic impact banner */}
+        <MotionReveal delay={0.02}>
         <div className="relative overflow-hidden rounded-2xl bg-primary p-5 text-white">
           <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
           <div className="absolute -right-1 bottom-0 w-16 h-16 rounded-full bg-secondary-container/20" />
@@ -62,9 +65,10 @@ export default function HomeDashboardPage() {
             </span>
           </div>
         </div>
+        </MotionReveal>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-3 gap-3">
+        <MotionReveal delay={0.1} className="grid grid-cols-3 gap-3">
           {quickActions.map((action) => (
             <Link
               key={action.label}
@@ -79,10 +83,10 @@ export default function HomeDashboardPage() {
               </span>
             </Link>
           ))}
-        </div>
+        </MotionReveal>
 
         {/* Community impact stats */}
-        <div className="grid grid-cols-2 gap-4">
+        <MotionReveal delay={0.18} className="grid grid-cols-2 gap-4">
           <div className="bg-primary text-white p-4 rounded-2xl shadow-md flex flex-col gap-1">
             <span className="font-eyebrow text-eyebrow text-white/70">REPORTS FILED</span>
             <span className="font-headline text-headline-md text-white">18,204</span>
@@ -91,7 +95,7 @@ export default function HomeDashboardPage() {
             <span className="font-eyebrow text-eyebrow text-on-secondary-container/70">VERIFIED THIS MONTH</span>
             <span className="font-headline text-headline-md text-on-secondary-container">1,204</span>
           </div>
-        </div>
+        </MotionReveal>
 
         {/* Trending near you */}
         <div>
@@ -101,7 +105,7 @@ export default function HomeDashboardPage() {
               See map
             </Link>
           </div>
-          <div className="space-y-3">
+          <AutoAnimateList className="space-y-3">
             {projects.map((project) => {
               const meta = statusMeta[project.status];
               return (
@@ -136,7 +140,7 @@ export default function HomeDashboardPage() {
                 </Link>
               );
             })}
-          </div>
+          </AutoAnimateList>
         </div>
 
         <p className="text-center font-body-md text-[12px] text-on-surface-variant pt-1">
