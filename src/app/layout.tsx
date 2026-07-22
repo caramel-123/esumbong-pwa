@@ -1,18 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Baloo_2, Nunito_Sans } from "next/font/google";
+import { Space_Grotesk, Inter } from "next/font/google";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
-const baloo2 = Baloo_2({
-  variable: "--font-baloo",
+const heading = Space_Grotesk({
+  variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["500", "600", "700"],
 });
 
-const nunitoSans = Nunito_Sans({
-  variable: "--font-nunito",
+const body = Inter({
+  variable: "--font-body-sans",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -41,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${baloo2.variable} ${nunitoSans.variable} h-full antialiased`}
+      className={`${heading.variable} ${body.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
@@ -50,12 +50,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body
-        className="min-h-full flex flex-col"
-        style={{
-          fontFamily: "var(--font-nunito), sans-serif",
-        }}
-      >
+      <body className="min-h-full flex flex-col">
         {children}
         <ServiceWorkerRegister />
       </body>
