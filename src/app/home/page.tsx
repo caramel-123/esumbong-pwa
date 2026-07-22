@@ -49,22 +49,22 @@ export default function HomeDashboardPage() {
       <div className="flex-1 px-margin-mobile pt-5 pb-24 space-y-6">
         {/* Greeting + civic impact banner */}
         <MotionReveal delay={0.02}>
-        <div className="relative overflow-hidden rounded-2xl bg-primary p-5 text-white">
-          <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
-          <div className="absolute -right-1 bottom-0 w-16 h-16 rounded-full bg-secondary-container/20" />
-          <p className="relative font-body-md text-[13px] text-white/70 mb-1">Magandang araw!</p>
-          <h2 className="relative font-headline text-headline-md text-white mb-3 max-w-[240px]">
-            Building a transparent Philippines, together.
-          </h2>
-          <div className="relative flex items-end gap-2">
-            <span className="font-headline text-[26px] font-black text-secondary-container leading-none">
-              ₱2.4B
-            </span>
-            <span className="font-body-md text-[12px] text-white/80 leading-tight pb-0.5">
-              in public projects being tracked by citizens like you
-            </span>
+          <div className="relative overflow-hidden rounded-2xl bg-primary p-5 text-white">
+            <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+            <div className="absolute -right-1 bottom-0 w-16 h-16 rounded-full bg-secondary-container/20" />
+            <p className="relative font-body-md text-[13px] text-white/70 mb-1">Magandang araw!</p>
+            <h2 className="relative font-headline text-headline-md text-white mb-3 max-w-[240px]">
+              Building a transparent Philippines, together.
+            </h2>
+            <div className="relative flex items-end gap-2">
+              <span className="font-headline text-[26px] font-black text-secondary-container leading-none">
+                ₱2.4B
+              </span>
+              <span className="font-body-md text-[12px] text-white/80 leading-tight pb-0.5">
+                in public projects being tracked by citizens like you
+              </span>
+            </div>
           </div>
-        </div>
         </MotionReveal>
 
         {/* Quick actions */}
