@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import BottomNav from "@/components/BottomNav";
 import Icon from "@/components/Icon";
 import { projects, getProject, type ProjectStatus } from "@/lib/mock-data";
-import placesData from "@/data/places.json";
+import placesData from "@/lib/places.json";
 import type { FocusTarget, MapMarker } from "@/components/MapView";
 
 // Leaflet touches window, so the map is client-only (no SSR).
