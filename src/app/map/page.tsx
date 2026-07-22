@@ -1,174 +1,176 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useState } from "react";
+import dynamic from "next/dynamic";
 import BottomNav from "@/components/BottomNav";
+import Icon from "@/components/Icon";
+import { projects, getProject, type ProjectStatus } from "@/lib/mock-data";
+import placesData from "@/data/places.json";
+import type { FocusTarget, MapMarker } from "@/components/MapView";
 
-const mapFilters = ["All Issues", "Roads", "Waste", "Water"];
+// Leaflet touches window, so the map is client-only (no SSR).
+const MapView = dynamic(() => import("@/components/MapView"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-surface-container-high text-on-surface-variant text-sm">
+      Loading map…
+    </div>
+  ),
+});
 
-const pins = [
-  {
-    href: "/project/1",
-    top: "32%",
-    left: "24%",
-    status: "VERIFIED",
-    color: "bg-primary",
-    ring: "border-primary",
-    icon: "construction",
-  },
-  {
-    href: "/project/2",
-    top: "45%",
-    left: "66%",
-    status: "PENDING",
-    color: "bg-secondary-container",
-    ring: "border-secondary-container",
-    icon: "delete",
-  },
-  {
-    href: "/project/3",
-    top: "66%",
-    left: "50%",
-    status: "FLAGGED",
-    color: "bg-error",
-    ring: "border-error",
-    icon: "priority_high",
-  },
-];
+interface Place {
+  id: string;
+  name: string;
+  label: string;
+  lat: number;
+  lng: number;
+  projectId?: string;
+}
 
-export default function HomeMapPage() {
-  const [activeFilter, setActiveFilter] = useState(mapFilters[0]);
+const places = placesData as Place[];
+
+const categories = ["All Issues", "Roads", "Waste", "Water"] as const;
+type Category = (typeof categories)[number];
+
+// crude keyword routing so the chips actually filter the demo markers
+const CATEGORY_KEYWORDS: Record<Category, string[]> = {
+  "All Issues": [],
+  Roads: ["bridge", "road", "pavement"],
+  Waste: ["waste", "dumping", "drainage"],
+  Water: ["flood", "river", "water", "esplanade", "culvert"],
+};
+
+const statusBadge: Record<ProjectStatus, string> = {
+  verified: "bg-primary-fixed text-primary",
+  pending: "bg-secondary-fixed text-on-secondary-container",
+  flagged: "bg-error-container text-error",
+};
+
+export default function MapPage() {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState<Category>("All Issues");
+  const [focus, setFocus] = useState<FocusTarget | undefined>();
+  const [activeId, setActiveId] = useState<string | undefined>();
+
+  // markers come from real project coordinates, filtered by category chip
+  const markers: MapMarker[] = useMemo(() => {
+    const kws = CATEGORY_KEYWORDS[category];
+    return projects
+      .filter((p) => {
+        if (kws.length === 0) return true;
+        const hay = `${p.name} ${p.description}`.toLowerCase();
+        return kws.some((k) => hay.includes(k));
+      })
+      .map((p) => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng, status: p.status }));
+  }, [category]);
+
+  // search dropdown reads the JSON list
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return places
+      .filter((pl) => pl.name.toLowerCase().includes(q) || pl.label.toLowerCase().includes(q))
+      .slice(0, 6);
+  }, [query]);
+
+  function goToPlace(pl: Place) {
+    setFocus({ lat: pl.lat, lng: pl.lng, zoom: 16, key: Date.now() });
+    setQuery("");
+    if (pl.projectId) setActiveId(pl.projectId);
+  }
+
+  function selectMarker(id: string) {
+    setActiveId(id);
+    const p = getProject(id);
+    setFocus({ lat: p.lat, lng: p.lng, zoom: 16, key: Date.now() });
+  }
+
+  const active = activeId ? getProject(activeId) : undefined;
 
   return (
-    <main className="relative w-full h-dvh max-w-[375px] mx-auto overflow-hidden bg-[#dbe4f5]">
-      {/* Full-bleed map, fills entire screen */}
-      <div className="absolute inset-0 z-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          className="w-full h-full object-cover"
-          alt="Map of Manila"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXOTqu4J9EusIssLa53RAT_yv3bmbZDs8mTtWOrC_UEmHC0sgg-fVZlhU3j-G5zMqffFs9T-nNXjmc6AV1SrNhVj-I0hPc1GCAPN2tyD4PfOM6jtJE3TMSfa1s78l203MFJwaA4puvlnItCXIwcBhwtgz5hB6YInNslWT3otxGp8zcPt1Iz-d9fnCMd81Js3lfxBkOrVfFQsFwWb4cEnJ5Bg567fOJs0_KvPp2-QmNUQ0NhL9wz0YPNI8YkcMu3LG7z8cpnSJoHwU"
-        />
+    <main className="relative flex flex-col h-screen max-w-[375px] mx-auto overflow-hidden bg-surface">
+      {/* Map fills the frame */}
+      <div className="absolute inset-0">
+        <MapView markers={markers} focus={focus} activeId={activeId} onSelect={selectMarker} />
       </div>
 
-      {/* Top scrim so status bar + floating header stay legible over the map */}
-      <div
-        className="absolute top-0 inset-x-0 h-44 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(to bottom, rgba(0,17,64,0.45) 0%, rgba(0,17,64,0) 100%)" }}
-      />
-
-      {/* Device status bar (mock) */}
-      <div className="relative z-30 h-11 w-full flex items-center justify-between px-6 text-white drop-shadow-sm">
-        <span className="font-bold text-[14px]">9:41</span>
-        <div className="flex gap-1.5 items-center">
-          <span className="material-symbols-outlined text-[18px]">signal_cellular_4_bar</span>
-          <span className="material-symbols-outlined text-[18px]">wifi</span>
-          <span className="material-symbols-outlined text-[20px]">battery_full</span>
-        </div>
-      </div>
-
-      {/* Floating brand + search + filters, blurred over the map */}
-      <div className="absolute top-11 inset-x-0 px-margin-mobile pt-3 z-30 flex flex-col gap-3">
-        <div className="flex items-center bg-white/80 backdrop-blur-xl rounded-full p-1.5 shadow-lg border border-white/60 gap-1">
-          <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-            <span className="material-symbols-outlined text-white text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-              shield
-            </span>
+      {/* Floating search + chips */}
+      <div className="relative z-[500] px-4 pt-3 space-y-3 pointer-events-none">
+        <div className="pointer-events-auto">
+          <div className="flex items-center gap-2 bg-white rounded-full shadow-lg px-4 h-12 border border-outline-variant">
+            <Icon name="search" size={20} className="text-primary shrink-0" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search projects, locations…"
+              className="flex-1 bg-transparent outline-none text-sm text-on-surface placeholder:text-on-surface-variant"
+            />
+            <Icon name="tune" size={18} className="text-on-surface-variant shrink-0" />
           </div>
-          <input
-            className="flex-1 min-w-0 bg-transparent border-none focus:ring-0 text-on-surface font-body-md text-[14px] placeholder:text-on-surface-variant/60 py-1.5 outline-none"
-            placeholder="Search projects, locations..."
-            type="text"
-          />
-          <div className="w-9 h-9 flex items-center justify-center text-primary flex-shrink-0">
-            <span className="material-symbols-outlined text-[20px]">tune</span>
-          </div>
+
+          {results.length > 0 && (
+            <ul className="mt-2 bg-white rounded-2xl shadow-xl border border-outline-variant overflow-hidden">
+              {results.map((pl) => (
+                <li key={pl.id}>
+                  <button
+                    onClick={() => goToPlace(pl)}
+                    className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-surface-container-low active:bg-surface-container transition-colors"
+                  >
+                    <Icon name="location_on" size={18} className="text-primary mt-0.5 shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block text-sm text-on-surface truncate">{pl.name}</span>
+                      <span className="block text-xs text-on-surface-variant truncate">{pl.label}</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
-        <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          {mapFilters.map((filter) => (
+        <div className="flex gap-2 overflow-x-auto pb-1 pointer-events-auto no-scrollbar">
+          {categories.map((c) => (
             <button
-              key={filter}
-              type="button"
-              onClick={() => setActiveFilter(filter)}
-              aria-pressed={activeFilter === filter}
-              className={`whitespace-nowrap px-4 py-2 rounded-full font-label-md text-label-md transition-all active:scale-95 ${
-                activeFilter === filter
-                  ? "bg-primary text-on-primary shadow-md"
-                  : "bg-white/80 backdrop-blur-xl text-on-surface-variant border border-white/60 shadow-sm"
+              key={c}
+              onClick={() => setCategory(c)}
+              className={`px-4 h-9 rounded-full text-sm font-semibold whitespace-nowrap shadow-sm transition-colors ${
+                category === c
+                  ? "bg-primary text-white"
+                  : "bg-white text-on-surface border border-outline-variant"
               }`}
             >
-              {filter}
+              {c}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Map pins — larger badges with white outline for legibility */}
-      {pins.map((pin) => (
-        <Link
-          key={pin.href}
-          href={pin.href}
-          className="absolute z-20 flex flex-col items-center cursor-pointer group -translate-x-1/2 -translate-y-full"
-          style={{ top: pin.top, left: pin.left }}
-        >
-          <div
-            className={`absolute -top-9 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full border ${pin.ring} shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap`}
+      {/* Selected project card */}
+      {active && (
+        <div className="absolute bottom-20 left-4 right-4 z-[500]">
+          <Link
+            href={`/project/${active.id}`}
+            className="flex items-center gap-3 bg-white rounded-2xl shadow-xl border border-outline-variant p-3 active:scale-[0.98] transition-transform"
           >
-            <span className="font-label-sm text-label-sm uppercase text-on-surface">{pin.status}</span>
-          </div>
-          <div
-            className={`w-12 h-12 rounded-full ${pin.color} border-[3px] border-white shadow-[0_3px_10px_rgba(0,0,0,0.35)] flex items-center justify-center`}
-          >
-            <span className="material-symbols-outlined text-white text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
-              {pin.icon}
-            </span>
-          </div>
-          <div className={`w-3 h-3 ${pin.color} rotate-45 -mt-1.5 border-r-[3px] border-b-[3px] border-white`} />
-        </Link>
-      ))}
-
-      {/* Map controls */}
-      <div className="absolute z-30 right-margin-mobile flex flex-col gap-3" style={{ bottom: "168px" }}>
-        <button className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-primary active:scale-90 transition-transform">
-          <span className="material-symbols-outlined text-[24px]">my_location</span>
-        </button>
-        <button className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-on-surface-variant active:scale-90 transition-transform">
-          <span className="material-symbols-outlined text-[24px]">layers</span>
-        </button>
-      </div>
-
-      {/* Floating status card, above the bottom nav */}
-      <Link href="/project/1" className="absolute inset-x-0 z-30 px-margin-mobile block" style={{ bottom: "104px" }}>
-        <div className="bg-white p-3.5 rounded-2xl shadow-[0_8px_24px_rgba(0,17,64,0.25)] flex items-center gap-3 border-l-4 border-primary">
-          <div className="w-14 h-14 rounded-xl bg-surface-container flex-shrink-0 overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="w-full h-full object-cover"
-              alt="Damaged pavement"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAq_SJpjnuPiIXTnBWEnFgXbBBmWebUVE5Q8k_o5nZNsXSCN48fKtuj3qno1LcHGlbT-OYXci4K_6VWGZi0B5rTrDwb-jped8jZHH64zKUtvAJ9A5eKEWt3evEBe9bea78jjAjc_xqAprqynKWdq2zFm4_Mk1HpOpajY-aAjobP6NvB8dn7hHao5YVbU738CpJUGDKTnEh5jYBklCYJVtO0kh97cJI5I5dbKEFkmX6ey783rkmo3LkszunaQ6Js3PXe-fAJFgpnlG4"
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex justify-between items-center mb-1">
-              <span className="bg-primary-fixed text-primary px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">
-                Verified
-              </span>
-              <span className="text-on-surface-variant text-[11px]">2m ago</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusBadge[active.status]}`}>
+                  {active.status}
+                </span>
+                <span className="text-[11px] text-on-surface-variant truncate">{active.location}</span>
+              </div>
+              <h3 className="font-label-md text-label-md text-on-surface truncate">{active.name}</h3>
+              <p className="text-[11px] text-on-surface-variant truncate">
+                {active.agency} · {active.budget} · claimed {active.claimedPct}%
+              </p>
             </div>
-            <h3 className="font-headline text-[15px] truncate leading-tight text-on-surface">
-              Damaged Pavement - Rizal St.
-            </h3>
-            <p className="text-on-surface-variant text-[11px] truncate">
-              Reported by eVerify User #2409
-            </p>
-          </div>
-          <span className="material-symbols-outlined text-on-surface-variant flex-shrink-0">chevron_right</span>
+            <Icon name="chevron_right" size={20} className="text-on-surface-variant shrink-0" />
+          </Link>
         </div>
-      </Link>
+      )}
 
       <BottomNav active="map" />
-      <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-white/50 rounded-full z-[60]"></div>
     </main>
   );
 }
