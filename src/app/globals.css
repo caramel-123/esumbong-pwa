@@ -129,8 +129,8 @@
   --spacing-margin-desktop: var(--spacing-margin-desktop);
   --spacing-container-max: var(--spacing-container-max);
 
-  --font-headline: var(--font-baloo), sans-serif;
-  --font-body: var(--font-nunito), sans-serif;
+  --font-headline: var(--font-heading), sans-serif;
+  --font-body: var(--font-body-sans), sans-serif;
 
   --text-headline-lg: 32px;
   --text-headline-lg--line-height: 40px;
@@ -178,3 +178,6 @@ body {
 .soft-gradient-bg {
   background: radial-gradient(circle at 50% -20%, #e0e1f2 0%, #faf8ff 60%);
 }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
